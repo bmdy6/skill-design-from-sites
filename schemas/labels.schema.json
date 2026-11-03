@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "siteId",
+    "color",
+    "fontFamily",
+    "shadow",
+    "components",
+    "styleSummary"
+  ],
+  "properties": {
+    "siteId": {
+      "type": "string"
+    },
+    "color": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "fontFamily": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "shadow": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "components": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "styleSummary": {
+      "type": "string"
+    }
+  }
+}

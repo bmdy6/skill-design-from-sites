@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "primarySite",
+    "siteScores",
+    "choices",
+    "contrastFixes"
+  ],
+  "properties": {
+    "primarySite": {
+      "type": "string"
+    },
+    "siteScores": {
+      "type": "object"
+    },
+    "choices": {
+      "type": "array"
+    },
+    "contrastFixes": {
+      "type": "array"
+    }
+  }
+}

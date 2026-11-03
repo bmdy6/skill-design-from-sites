@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "additionalProperties": {
+    "type": "object",
+    "required": [
+      "site",
+      "cluster",
+      "value",
+      "confidence",
+      "derived",
+      "evidence"
+    ]
+  }
+}
