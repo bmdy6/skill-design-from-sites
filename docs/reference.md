@@ -4,7 +4,7 @@
 
 ## Install and scope
 
-Node ≥ 20, ESM, no build step. Install with `npm ci`, then run `node scripts/doctor.mjs --json`, which installs Chromium if missing. To install as an agent skill, run `npx skills add bmdy6/skill-design-from-sites`.
+Node ≥ 20, ESM, no build step. Install with `npm ci`, then run `node scripts/doctor.mjs --json`, which installs Chromium if missing. To install as an agent skill, run `npx skills add bmdy6/skill-design-from-sites`. It asks which agents to install to; in scripts or CI, pass them explicitly: `npx skills add bmdy6/skill-design-from-sites --agent claude-code -y`.
 
 Only public pages are collected. The skill never reads logged-in sessions, cookies, an existing browser profile, agent memory or internal systems. It measures one page at two viewports and never crawls a site. During collection, image, font, SVG, logo and video requests are blocked at the request layer. Previews use only original placeholder blocks and local Lucide icons.
 

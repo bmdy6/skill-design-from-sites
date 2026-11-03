@@ -4,7 +4,7 @@
 
 ## 安装与范围
 
-Node ≥20，ESM，无构建步骤。安装：`npm ci`，运行 `node scripts/doctor.mjs --json` 自动补齐 Chromium。可通过 `npx skills add bmdy6/skill-design-from-sites` 安装技能。
+Node ≥20，ESM，无构建步骤。安装：`npm ci`，运行 `node scripts/doctor.mjs --json` 自动补齐 Chromium。可通过 `npx skills add bmdy6/skill-design-from-sites` 安装技能；它会询问装到哪些 agent，在脚本或 CI 里请显式指定：`npx skills add bmdy6/skill-design-from-sites --agent claude-code -y`。
 
 只采集公开页面；不会读取登录态、cookie、浏览器原有 profile、agent 记忆或内部系统。单页两个视口，不爬整站。正式采集在请求层拦截图片、字体、SVG、logo、视频。预览只用原创占位块与本地 Lucide 图标。
 
