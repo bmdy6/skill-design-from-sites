@@ -134,7 +134,10 @@ test("personal original-page workflow collects, verifies and reaches approved bu
       }),
       e = extractRaw(raws);
     await writeJSON(path.join(dir, "evidence/a.json"), e);
-    const by = (value) => e.clusters.color.find((c) => c.value === value).id;
+    const by = (value) =>
+      e.clusters.color.find(
+        (c) => c.value === value || c.members.includes(value),
+      ).id;
     await writeJSON(path.join(dir, "labels/a.json"), {
       siteId: "a",
       color: {
@@ -203,7 +206,10 @@ test("no-reference personal branch discovers original cards, votes and reaches b
     const evidenceDir = path.join(out, "evidence");
     for (const name of await fs.readdir(evidenceDir)) {
       const e = await readJSON(path.join(evidenceDir, name));
-      const by = (value) => e.clusters.color.find((c) => c.value === value).id;
+      const by = (value) =>
+        e.clusters.color.find(
+          (c) => c.value === value || c.members.includes(value),
+        ).id;
       await writeJSON(path.join(out, "labels", name), {
         siteId: e.siteId,
         color: {

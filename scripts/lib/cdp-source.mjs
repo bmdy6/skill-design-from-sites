@@ -8,16 +8,23 @@ export async function setupCDP(context, page) {
   await session.send("CSS.enable");
   return { session, headers };
 }
-function declaration(style, property) {
-  for (const p of [...(style?.cssProperties || [])].reverse()) {
-    if (p.disabled || p.parsedOk === false || p.implicit) continue;
-    if (
+export function declaration(style, property) {
+  const properties = (style?.cssProperties || [])
+    .map((p, index) => ({ p, index }))
+    .filter(({ p }) => !p.disabled && p.parsedOk !== false && !p.implicit);
+  const authored = properties.filter(({ p }) => p.range || p.text);
+  // CDP appends synthetic longhands without source ranges. They cannot replace
+  // an authored declaration, even when their names match exactly.
+  const candidates = (authored.length ? authored : properties).filter(
+    ({ p }) =>
       p.name === property ||
-      p.longhandProperties?.some((l) => l.name === property)
-    )
-      return p;
-  }
-  return null;
+      p.longhandProperties?.some((l) => l.name === property),
+  );
+  candidates.sort(
+    (a, b) =>
+      Number(!!b.p.important) - Number(!!a.p.important) || b.index - a.index,
+  );
+  return candidates[0]?.p || null;
 }
 export async function sourceFor(cdp, selector, property) {
   const { session, headers } = cdp;
@@ -74,19 +81,27 @@ export async function sourceFor(cdp, selector, property) {
       };
     const h = headers.get(c.style.styleSheetId);
     const range = c.p.range || c.style.range;
-    const cssom = c.origin !== "inline" && (!h || !h.sourceURL);
+    const cssom =
+      !["inline", "user-agent"].includes(c.origin) && (!h || !h.sourceURL);
+    const authored = c.p.text?.includes(":")
+      ? c.p.text
+          .slice(c.p.text.indexOf(":") + 1)
+          .replace(/;\s*$/, "")
+          .replace(/!important\s*$/i, "")
+          .trim()
+      : c.p.value;
+    const located = !cssom && c.origin !== "user-agent" && range;
     return {
       origin: cssom ? "cssom" : c.origin,
       ruleSelector: c.ruleSelector,
-      authoredValue: c.p.value,
+      authoredValue: authored,
       stylesheet: h?.sourceURL || "",
-      line: !cssom && range ? (h?.startLine || 0) + range.startLine + 1 : null,
-      column:
-        !cssom && range
-          ? range.startColumn +
-            1 +
-            (range.startLine === 0 ? h?.startColumn || 0 : 0)
-          : null,
+      line: located ? (h?.startLine || 0) + range.startLine + 1 : null,
+      column: located
+        ? range.startColumn +
+          1 +
+          (range.startLine === 0 ? h?.startColumn || 0 : 0)
+        : null,
     };
   } finally {
     await session.send("Runtime.releaseObjectGroup", { objectGroup: "dfs" });

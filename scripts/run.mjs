@@ -439,7 +439,7 @@ export async function run(o) {
     await emit({ tokens: path.join(out, "tokens.json"), out });
     const r = await verifySources({ run: out, sample: 10, seed: 1 });
     if (r.failures.length || r.sampled < 10)
-      fail("Source verification incomplete", 1);
+      fail("Source verification incomplete: " + JSON.stringify(r), 1);
     const next = {
       step: "design",
       prompt: "prompts/design-md.md",

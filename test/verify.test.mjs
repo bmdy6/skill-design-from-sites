@@ -51,7 +51,7 @@ test("ten local CDP declarations reverify and corrupt line fails", async () => {
         sources[sid] = { evidence: [s] };
     await writeJSON(path.join(run, "sources.json"), sources);
     const r = await verifySources({ run, sample: 10, seed: 1 });
-    assert.equal(r.passed, 10);
+    assert.equal(r.passed, 10, JSON.stringify(r));
     const selected = sampleSources(sources, 10, 1)[0];
     sources[selected.token].evidence[0].line += 1000;
     await writeJSON(path.join(run, "sources.json"), sources);
