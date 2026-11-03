@@ -1,0 +1,5 @@
+node_modules/
+.design-from-sites/
+coverage/
+*.log
+.worktrees/
