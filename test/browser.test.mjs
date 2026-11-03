@@ -1,3 +1,40 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs/promises';import path from 'node:path';import os from 'node:os';import {openBrowser,probe,detectBrowsers} from '../scripts/lib/browser.mjs';import {chromium} from 'playwright';
-test('candidate order gives explicit path priority and keeps chromium fallback',()=>{const candidates=detectBrowsers({DFS_BROWSER:'/tmp/fake-browser'});assert.equal(candidates[0].path,'/tmp/fake-browser');assert.equal(candidates.at(-1).name,'chromium');});
-test('failed alternate browser falls back; chromium supports actual CSS domain',async()=>{const dir=await fs.mkdtemp(path.join(os.tmpdir(),'dfs-browser-'));const fake=path.join(dir,'fake');await fs.writeFile(fake,'#!/bin/sh\nexit 1\n',{mode:0o755});try{const p=await probe({name:'ego lite',path:chromium.executablePath()});assert.equal(p.cssDomain,true);const {browser,info,steps}=await openBrowser({css:true,env:{DFS_BROWSER:fake},candidates:[{name:'alternate',path:fake},{name:'chromium',path:chromium.executablePath(),builtin:true}]});try{assert.equal(info.name,'chromium');assert.ok(steps.some(s=>s.status==='fallback'));}finally{await browser.close();}}finally{await fs.rm(dir,{recursive:true,force:true});}});
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import path from "node:path";
+import os from "node:os";
+import { openBrowser, probe, detectBrowsers } from "../scripts/lib/browser.mjs";
+import { chromium } from "playwright";
+test("candidate order gives explicit path priority and keeps chromium fallback", () => {
+  const candidates = detectBrowsers({ DFS_BROWSER: "/tmp/fake-browser" });
+  assert.equal(candidates[0].path, "/tmp/fake-browser");
+  assert.equal(candidates.at(-1).name, "chromium");
+});
+test("failed alternate browser falls back; chromium supports actual CSS domain", async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "dfs-browser-"));
+  const fake = path.join(dir, "fake");
+  await fs.writeFile(fake, "#!/bin/sh\nexit 1\n", { mode: 0o755 });
+  try {
+    const p = await probe({
+      name: "ego lite",
+      path: chromium.executablePath(),
+    });
+    assert.equal(p.cssDomain, true);
+    const { browser, info, steps } = await openBrowser({
+      css: true,
+      env: { DFS_BROWSER: fake },
+      candidates: [
+        { name: "alternate", path: fake },
+        { name: "chromium", path: chromium.executablePath(), builtin: true },
+      ],
+    });
+    try {
+      assert.equal(info.name, "chromium");
+      assert.ok(steps.some((s) => s.status === "fallback"));
+    } finally {
+      await browser.close();
+    }
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});

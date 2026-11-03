@@ -1,4 +1,109 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs/promises';import path from 'node:path';import os from 'node:os';import {discover,robotsAllowed} from '../scripts/inspire-discover.mjs';import {parseGallery} from '../scripts/lib/galleries/shared.mjs';import {serve} from './helpers/serve.mjs';import {readJSON} from '../scripts/lib/io.mjs';
-test('adapters return exact metadata and do not throw on malformed input',async()=>{for(const name of ['awwwards','godly','landbook']){const rows=parseGallery(await fs.readFile(`test/fixtures/galleries/${name}/index.html`,'utf8'),'https://gallery.invalid/');const ex=await readJSON(`test/fixtures/expected/gallery-${name}.json`);assert.deepEqual(rows.map(({siteUrl,title,tags})=>({siteUrl,title,tags})),ex);}assert.deepEqual(parseGallery(null,'bad'),[]);assert.equal(robotsAllowed('User-agent: *\nDisallow: /private\nAllow: /private/open','/private/open'),true);});
-test('discovery obeys robots, throttle, diversity, dedup and seed fallback',async()=>{const s=await serve('test/fixtures/galleries'),dir=await fs.mkdtemp(path.join(os.tmpdir(),'dfs-discover-'));try{const sources=['awwwards','godly','landbook','denied'].map(name=>({name,url:s.url+'/'+name+'/',robots:s.url+'/'+name+'/robots.txt'}));const result=await discover({sources,limit:24,out:path.join(dir,'candidates.json')});assert.equal(result.sources.find(s=>s.name==='denied').status,'robots-denied');assert.deepEqual(s.requests.filter(r=>r.url.startsWith('/denied/')).map(r=>r.url),['/denied/robots.txt']);assert.equal(s.requests.filter(r=>/jpg|mp4/.test(r.url)).length,0);assert.equal(new Set(result.candidates.map(c=>c.host)).size,result.candidates.length);for(const theme of ['dark','light'])for(const type of ['serif','sans'])assert.ok(result.candidates.filter(c=>c.tags.includes(theme)&&c.tags.includes(type)).length>=2);for(let i=1;i<s.requests.length;i++)assert.ok(s.requests[i].at-s.requests[i-1].at>=1950);const fallback=await discover({sources:[sources[3]],limit:24,out:path.join(dir,'fallback.json')});assert.ok(fallback.candidates.length>=8);assert.ok(fallback.candidates.every(c=>c.from==='seed'));}finally{await s.close();await fs.rm(dir,{recursive:true,force:true});}});
-test('neighbor round reserves seventy percent for related candidates',async()=>{const {selectCandidates}=await import('../scripts/inspire-discover.mjs');const items=Array.from({length:40},(_,i)=>({siteUrl:`https://candidate-${i}.invalid`,tags:[i%2?'dark':'light',i%4<2?'sans':'serif','portfolio']}));const result=selectCandidates(items,24,{items:[{cid:'old',vote:'like'}]},[{cid:'old',tags:['portfolio']}]);assert.ok(Math.abs(result.filter(c=>c.pickedBy==='neighbor').length/result.length-.7)<=.1);});
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import path from "node:path";
+import os from "node:os";
+import { discover, robotsAllowed } from "../scripts/inspire-discover.mjs";
+import { parseGallery } from "../scripts/lib/galleries/shared.mjs";
+import { serve } from "./helpers/serve.mjs";
+import { readJSON } from "../scripts/lib/io.mjs";
+test("adapters return exact metadata and do not throw on malformed input", async () => {
+  for (const name of ["awwwards", "godly", "landbook"]) {
+    const rows = parseGallery(
+      await fs.readFile(`test/fixtures/galleries/${name}/index.html`, "utf8"),
+      "https://gallery.invalid/",
+    );
+    const ex = await readJSON(`test/fixtures/expected/gallery-${name}.json`);
+    assert.deepEqual(
+      rows.map(({ siteUrl, title, tags }) => ({ siteUrl, title, tags })),
+      ex,
+    );
+  }
+  assert.deepEqual(parseGallery(null, "bad"), []);
+  assert.equal(
+    robotsAllowed(
+      "User-agent: *\nDisallow: /private\nAllow: /private/open",
+      "/private/open",
+    ),
+    true,
+  );
+});
+test("discovery obeys robots, throttle, diversity, dedup and seed fallback", async () => {
+  const s = await serve("test/fixtures/galleries"),
+    dir = await fs.mkdtemp(path.join(os.tmpdir(), "dfs-discover-"));
+  try {
+    const sources = ["awwwards", "godly", "landbook", "denied"].map((name) => ({
+      name,
+      url: s.url + "/" + name + "/",
+      robots: s.url + "/" + name + "/robots.txt",
+    }));
+    const result = await discover({
+      sources,
+      limit: 24,
+      out: path.join(dir, "candidates.json"),
+    });
+    assert.equal(
+      result.sources.find((s) => s.name === "denied").status,
+      "robots-denied",
+    );
+    assert.deepEqual(
+      s.requests.filter((r) => r.url.startsWith("/denied/")).map((r) => r.url),
+      ["/denied/robots.txt"],
+    );
+    assert.equal(s.requests.filter((r) => /jpg|mp4/.test(r.url)).length, 0);
+    assert.equal(
+      new Set(result.candidates.map((c) => c.host)).size,
+      result.candidates.length,
+    );
+    for (const theme of ["dark", "light"])
+      for (const type of ["serif", "sans"])
+        assert.ok(
+          result.candidates.filter(
+            (c) => c.tags.includes(theme) && c.tags.includes(type),
+          ).length >= 2,
+        );
+    for (let i = 1; i < s.requests.length; i++)
+      assert.ok(s.requests[i].at - s.requests[i - 1].at >= 1950);
+    const fallback = await discover({
+      sources: [sources[3]],
+      limit: 24,
+      out: path.join(dir, "fallback.json"),
+    });
+    assert.ok(fallback.candidates.length >= 8);
+    assert.ok(fallback.candidates.every((c) => c.from === "seed"));
+  } finally {
+    await s.close();
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});
+test("neighbor round reserves seventy percent for related candidates", async () => {
+  const { selectCandidates } = await import("../scripts/inspire-discover.mjs");
+  const items = Array.from({ length: 40 }, (_, i) => ({
+    siteUrl: `https://candidate-${i}.invalid`,
+    tags: [i % 2 ? "dark" : "light", i % 4 < 2 ? "sans" : "serif", "portfolio"],
+  }));
+  const result = selectCandidates(
+    items,
+    24,
+    { items: [{ cid: "old", vote: "like" }] },
+    [{ cid: "old", tags: ["portfolio"] }],
+  );
+  assert.ok(
+    Math.abs(
+      result.filter((c) => c.pickedBy === "neighbor").length / result.length -
+        0.7,
+    ) <= 0.1,
+  );
+});
+test("metadata cards provide visit title without admitting unrelated navigation", () => {
+  const html =
+    '<html><body><a href="https://navigation.invalid">Navigation</a><div data-collectable-model-value="{&quot;slug&quot;:&quot;original-card&quot;,&quot;title&quot;:&quot;Original Card&quot;,&quot;tags&quot;:[&quot;Dark&quot;,&quot;serif&quot;]}"></div><a href="https://card.invalid" data-visit-count-identifier-value="original-card"><svg></svg></a></body></html>';
+  const rows = parseGallery(html, "https://gallery.invalid/");
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].title, "Original Card");
+  assert.ok(rows[0].tags.includes("dark"));
+  assert.equal(
+    rows[0].galleryUrl,
+    "https://gallery.invalid/sites/original-card",
+  );
+});

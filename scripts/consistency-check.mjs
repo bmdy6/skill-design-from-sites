@@ -1,5 +1,66 @@
-import {checkPaths} from './check.mjs';
-import {cli,readJSON} from './lib/io.mjs';import {flattenTokens} from './build-tokens.mjs';import {color,deltaE} from './lib/color.mjs';
-const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
-export function consistencyCheck(baseline,tokens,approvals=[]){const base=flattenTokens(baseline),newValues=[];for(const [token,t]of Object.entries(flattenTokens(tokens))){const category=token.split('.')[0],candidates=Object.entries(base).filter(([p])=>p.startsWith(category+'.'));if(candidates.some(([,b])=>same(b.$value,t.$value)))continue;let nearestBase=null,delta=null;for(const [p,b]of candidates){const a=t.$value,v=b.$value;let d=typeof a==='string'&&typeof v==='string'&&color(a)&&color(v)?deltaE(a,v):a?.unit&&a.unit===v?.unit?Math.abs(a.value-v.value):null;if(d!==null&&(delta===null||d<delta)){delta=d;nearestBase=p;}}newValues.push({token,value:t.$value,nearestBase,delta,approved:approvals.some(a=>a.token===token&&same(a.value,t.$value))});}return {ok:newValues.every(v=>v.approved),newValues};}
-cli(import.meta.url,async o=>{const baseline=await readJSON(o.baseline),approvals=o.approved?await readJSON(o.approved):[],r=consistencyCheck(baseline,await readJSON(o.tokens),approvals);if(o.html){const checked=await checkPaths([o.html,...o._].flat(),baseline);for(const f of checked.findings){if(f.delta.deltaE===0||f.delta.px===0)continue;const token=f.file+':'+f.line+':'+f.property;r.newValues.push({token,value:f.value,nearestBase:f.nearestToken,delta:f.delta,approved:approvals.some(a=>a.token===token&&a.value===f.value)});}r.ok=r.newValues.every(v=>v.approved);}if(!r.ok)process.exitCode=1;return r;});
+import { checkPaths } from "./check.mjs";
+import { cli, readJSON } from "./lib/io.mjs";
+import { flattenTokens } from "./build-tokens.mjs";
+import { color, deltaE } from "./lib/color.mjs";
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+export function consistencyCheck(baseline, tokens, approvals = []) {
+  const base = flattenTokens(baseline),
+    newValues = [];
+  for (const [token, t] of Object.entries(flattenTokens(tokens))) {
+    const category = token.split(".")[0],
+      candidates = Object.entries(base).filter(([p]) =>
+        p.startsWith(category + "."),
+      );
+    if (candidates.some(([, b]) => same(b.$value, t.$value))) continue;
+    let nearestBase = null,
+      delta = null;
+    for (const [p, b] of candidates) {
+      const a = t.$value,
+        v = b.$value;
+      let d =
+        typeof a === "string" && typeof v === "string" && color(a) && color(v)
+          ? deltaE(a, v)
+          : a?.unit && a.unit === v?.unit
+            ? Math.abs(a.value - v.value)
+            : null;
+      if (d !== null && (delta === null || d < delta)) {
+        delta = d;
+        nearestBase = p;
+      }
+    }
+    newValues.push({
+      token,
+      value: t.$value,
+      nearestBase,
+      delta,
+      approved: approvals.some(
+        (a) => a.token === token && same(a.value, t.$value),
+      ),
+    });
+  }
+  return { ok: newValues.every((v) => v.approved), newValues };
+}
+cli(import.meta.url, async (o) => {
+  const baseline = await readJSON(o.baseline),
+    approvals = o.approved ? await readJSON(o.approved) : [],
+    r = consistencyCheck(baseline, await readJSON(o.tokens), approvals);
+  if (o.html) {
+    const checked = await checkPaths([o.html, ...o._].flat(), baseline);
+    for (const f of checked.findings) {
+      if (f.delta.deltaE === 0 || f.delta.px === 0) continue;
+      const token = f.file + ":" + f.line + ":" + f.property;
+      r.newValues.push({
+        token,
+        value: f.value,
+        nearestBase: f.nearestToken,
+        delta: f.delta,
+        approved: approvals.some(
+          (a) => a.token === token && a.value === f.value,
+        ),
+      });
+    }
+    r.ok = r.newValues.every((v) => v.approved);
+  }
+  if (!r.ok) process.exitCode = 1;
+  return r;
+});

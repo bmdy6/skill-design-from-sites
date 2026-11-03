@@ -16,16 +16,10 @@
       "const": 1
     },
     "mode": {
-      "enum": [
-        "personal",
-        "company"
-      ]
+      "enum": ["personal", "company"]
     },
     "owner": {
-      "enum": [
-        "self",
-        "boss"
-      ]
+      "enum": ["self", "boss"]
     },
     "goal": {
       "type": "string",
@@ -41,10 +35,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "url",
-          "note"
-        ],
+        "required": ["url", "note"],
         "properties": {
           "url": {
             "type": "string",
@@ -70,23 +61,13 @@
     },
     "constraints": {
       "type": "object",
-      "required": [
-        "theme",
-        "brandColor"
-      ],
+      "required": ["theme", "brandColor"],
       "properties": {
         "theme": {
-          "enum": [
-            "any",
-            "light",
-            "dark"
-          ]
+          "enum": ["any", "light", "dark"]
         },
         "brandColor": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         }
       }
     },
@@ -145,9 +126,7 @@
     },
     {
       "if": {
-        "required": [
-          "mode"
-        ],
+        "required": ["mode"],
         "properties": {
           "mode": {
             "const": "company"
@@ -155,9 +134,7 @@
         }
       },
       "then": {
-        "required": [
-          "company"
-        ]
+        "required": ["company"]
       }
     }
   ]

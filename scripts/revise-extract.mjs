@@ -1,4 +1,45 @@
-import path from 'node:path';import fs from 'node:fs/promises';import {cli,readJSON,writeJSON,write,fail} from './lib/io.mjs';import {htmlTree,findId} from './lib/html.mjs';
-export async function revisionContext(o){const run=o.run||'.design-from-sites',feedbackFile=o['feedback-file']||path.join(run,'feedback.json'),data=await readJSON(feedbackFile),item=data.items.find(i=>i.id===o.feedback);if(!item)fail('Feedback not found');if(item.targetIds.length!==1)fail('One common target required');const root=path.resolve(run,'preview'),page=path.resolve(root,item.page);if(!page.startsWith(root+path.sep))fail('Page outside preview');return {run,feedbackFile,data,item,page,dir:path.join(run,'revise',item.id)};}
-export async function reviseExtract(o){const c=await revisionContext(o),text=await fs.readFile(c.page,'utf8'),node=findId(htmlTree(text),c.item.targetIds[0]);if(!node?.sourceCodeLocation)fail('Target missing');const l=node.sourceCodeLocation,fragment=text.slice(l.startOffset,l.endOffset);await write(path.join(c.dir,'fragment.html'),fragment);const tokenNames=[...fragment.matchAll(/var\(--([\w-]+)\)/g)].map(m=>m[1]);const context={targetId:c.item.targetIds[0],page:c.item.page,comment:c.item.comment,tokenNames:[...new Set(tokenNames)],tasteSignal:c.item.tasteSignal||null};await writeJSON(path.join(c.dir,'context.json'),context);return context;}
-cli(import.meta.url,reviseExtract);
+import path from "node:path";
+import fs from "node:fs/promises";
+import { cli, readJSON, writeJSON, write, fail } from "./lib/io.mjs";
+import { htmlTree, findId } from "./lib/html.mjs";
+export async function revisionContext(o) {
+  const run = o.run || ".design-from-sites",
+    feedbackFile = o["feedback-file"] || path.join(run, "feedback.json"),
+    data = await readJSON(feedbackFile),
+    item = data.items.find((i) => i.id === o.feedback);
+  if (!item) fail("Feedback not found");
+  if (item.targetIds.length !== 1) fail("One common target required");
+  const root = path.resolve(run, "preview"),
+    page = path.resolve(root, item.page);
+  if (!page.startsWith(root + path.sep)) fail("Page outside preview");
+  return {
+    run,
+    feedbackFile,
+    data,
+    item,
+    page,
+    dir: path.join(run, "revise", item.id),
+  };
+}
+export async function reviseExtract(o) {
+  const c = await revisionContext(o),
+    text = await fs.readFile(c.page, "utf8"),
+    node = findId(htmlTree(text), c.item.targetIds[0]);
+  if (!node?.sourceCodeLocation) fail("Target missing");
+  const l = node.sourceCodeLocation,
+    fragment = text.slice(l.startOffset, l.endOffset);
+  await write(path.join(c.dir, "fragment.html"), fragment);
+  const tokenNames = [...fragment.matchAll(/var\(--([\w-]+)\)/g)].map(
+    (m) => m[1],
+  );
+  const context = {
+    targetId: c.item.targetIds[0],
+    page: c.item.page,
+    comment: c.item.comment,
+    tokenNames: [...new Set(tokenNames)],
+    tasteSignal: c.item.tasteSignal || null,
+  };
+  await writeJSON(path.join(c.dir, "context.json"), context);
+  return context;
+}
+cli(import.meta.url, reviseExtract);

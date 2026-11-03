@@ -1,17 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": [
-    "summary",
-    "findings"
-  ],
+  "required": ["summary", "findings"],
   "properties": {
     "summary": {
       "type": "object",
-      "required": [
-        "files",
-        "findings"
-      ]
+      "required": ["files", "findings"]
     },
     "findings": {
       "type": "array"

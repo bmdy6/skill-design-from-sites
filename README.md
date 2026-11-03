@@ -1,4 +1,5 @@
 # skill-design-from-sites
+
 从你喜欢的网站提取带出处的设计规范，先摸清审美再出设计稿 | Agent skill: design tokens with provenance, taste-first design drafts
 
 Node ≥20，ESM，无构建步骤。安装：`npm ci`，运行 `node scripts/doctor.mjs --json` 自动补齐 Chromium。可通过 `npx skills add OWNER/REPO` 安装技能；命令中的地址替换为本仓库地址。
@@ -40,3 +41,21 @@ npm test
 候选原站允许在临时 context 加载素材以判断审美，只保存自己截取的首屏到 `~/.cache/design-from-sites/shots/`，30 天后由 doctor 清理。图片不进入用户项目或本仓库。对外分享用 `taste-share.md`，只有来源链接、文字与 CSS 色块。
 
 `run.mjs taste` 串起 brief、发现/指定参考、截图、投票与 taste。确认审美后才进入 token 和设计稿；每个 gate 都写入 next.json，明确确认后才解锁依赖步骤。
+
+## 两种模式与批准
+
+从 `node scripts/run.mjs intake --mode personal --out .design-from-sites` 开始；每次把用户的一个真实答案传给 `--answer`，中断后沿用同一目录即可。个人模式最多五问。公司模式用 `--mode company`，逐项确认目标、用户、基准页面或代码、保持项、允许变更、外部灵感开关与审批人。
+
+公司模式默认关闭外部灵感，结构固定来自 `baseline`。完成问答后确认 spec；老板偏好只能由用户提供，或由宿主在用户同意后起草并逐条确认。技能自己不读取宿主记忆和业务系统。然后运行 `run.mjs boss`、`run.mjs baseline`、`run.mjs taste`，依照 next.json 前进。用户明确选择无老板偏好时，用 `run.mjs boss --none` 记录这个决定。
+
+用户确认 next.json 的问题后，宿主运行 `run.mjs approve --out DIR --gate NAME`；修改、否决和再投票不会解锁 gate。公司模式禁止跳过线框。需要老板确认的步骤由用户代为确认，记录 `user-on-behalf-of-boss`。`--approved` 的一致性批准文件是 `{token,value}` 数组，仅批准完全相同的值，不会沿用旧值的许可。
+
+本地基准读取 CSS 变量、DTCG JSON 和静态 Tailwind theme，不执行配置代码；动态函数、插件或计算式需要改用静态 token 输入。相对单位保留原单位。仅能从 token 检查的审美轴与必须渲染 HTML 才能检查的轴分开报告，`unchecked` 不代表通过。
+
+退出码：1 表示检查失败，2 表示输入或引用不合法，3 表示批准尚未取得。
+
+## 本地复现
+
+`node scripts/screenshots.mjs` 只用仓库原创 fixture 生成灵感看板、方案对比、圈改前后和分享页截图，默认写入 `docs/screenshots/`。此脚本不接受外部网站输入。浏览器受系统权限限制时，截图无法生成，也不据此认定视觉验收通过。
+
+真实网络冒烟不进 CI，输出必须留在仓库外：`scripts/smoke-sites.mjs`、`scripts/smoke-galleries.mjs`、`scripts/smoke-browser.mjs`。开发验证使用 `npm test`，没有额外构建步骤。

@@ -1,27 +1,16 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": [
-    "items"
-  ],
+  "required": ["items"],
   "properties": {
     "items": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "id",
-          "page",
-          "targetIds",
-          "comment",
-          "status"
-        ],
+        "required": ["id", "page", "targetIds", "comment", "status"],
         "properties": {
           "status": {
-            "enum": [
-              "open",
-              "done"
-            ]
+            "enum": ["open", "done"]
           },
           "targetIds": {
             "type": "array",

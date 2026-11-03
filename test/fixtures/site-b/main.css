@@ -14,3 +14,4 @@ h2 { font-size: 19.20px; }
 .muted { color: #bbbbbb; }
 .hero { background-image: url("/assets/back.jpg"); }
 @media (max-width: 600px) { main { padding: 16px; } }
+.font-demo { font-family: 'Fixture Sans', sans-serif; }

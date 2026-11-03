@@ -1,3 +1,94 @@
-export async function setupCDP(context,page){const session=await context.newCDPSession(page);const headers=new Map();session.on('CSS.styleSheetAdded',({header})=>headers.set(header.styleSheetId,header));await session.send('DOM.enable');await session.send('CSS.enable');return {session,headers};}
-function declaration(style,property){for(const p of [...(style?.cssProperties||[])].reverse()){if(p.disabled||p.parsedOk===false||p.implicit)continue;if(p.name===property||p.longhandProperties?.some(l=>l.name===property))return p;}return null;}
-export async function sourceFor(cdp,selector,property){const {session,headers}=cdp;const {result}=await session.send('Runtime.evaluate',{expression:`document.querySelector(${JSON.stringify(selector)})`,objectGroup:'dfs'});if(!result.objectId)return null;try{await session.send('DOM.getDocument');const {nodeId}=await session.send('DOM.requestNode',{objectId:result.objectId});const m=await session.send('CSS.getMatchedStylesForNode',{nodeId});let candidates=[];const add=(style,origin,ruleSelector,order)=>{const p=declaration(style,property);if(p)candidates.push({p,style,origin,ruleSelector,order});};add(m.inlineStyle,'inline',selector,1e6);for(const [i,x]of (m.matchedCSSRules||[]).entries())add(x.rule.style,x.rule.origin,x.rule.selectorList?.text||selector,i);if(!candidates.length)for(const ancestor of m.inherited||[]){add(ancestor.inlineStyle,'inherited',selector,1e6);for(const [i,x]of(ancestor.matchedCSSRules||[]).entries())add(x.rule.style,'inherited',x.rule.selectorList?.text||selector,i);if(candidates.length)break;}candidates.sort((a,b)=>Number(b.p.important||false)-Number(a.p.important||false)||b.order-a.order);const c=candidates[0];if(!c)return {origin:'user-agent',ruleSelector:selector,authoredValue:'',stylesheet:'',line:null,column:null};const h=headers.get(c.style.styleSheetId);const range=c.p.range||c.style.range;const cssom=c.origin!=='inline'&&(!h||!h.sourceURL);return {origin:cssom?'cssom':c.origin,ruleSelector:c.ruleSelector,authoredValue:c.p.value,stylesheet:h?.sourceURL||'',line:!cssom&&range?(h?.startLine||0)+range.startLine+1:null,column:!cssom&&range?range.startColumn+1+(range.startLine===0?(h?.startColumn||0):0):null};}finally{await session.send('Runtime.releaseObjectGroup',{objectGroup:'dfs'});}}
+export async function setupCDP(context, page) {
+  const session = await context.newCDPSession(page);
+  const headers = new Map();
+  session.on("CSS.styleSheetAdded", ({ header }) =>
+    headers.set(header.styleSheetId, header),
+  );
+  await session.send("DOM.enable");
+  await session.send("CSS.enable");
+  return { session, headers };
+}
+function declaration(style, property) {
+  for (const p of [...(style?.cssProperties || [])].reverse()) {
+    if (p.disabled || p.parsedOk === false || p.implicit) continue;
+    if (
+      p.name === property ||
+      p.longhandProperties?.some((l) => l.name === property)
+    )
+      return p;
+  }
+  return null;
+}
+export async function sourceFor(cdp, selector, property) {
+  const { session, headers } = cdp;
+  const { result } = await session.send("Runtime.evaluate", {
+    expression: `document.querySelector(${JSON.stringify(selector)})`,
+    objectGroup: "dfs",
+  });
+  if (!result.objectId) return null;
+  try {
+    await session.send("DOM.getDocument");
+    const { nodeId } = await session.send("DOM.requestNode", {
+      objectId: result.objectId,
+    });
+    const m = await session.send("CSS.getMatchedStylesForNode", { nodeId });
+    let candidates = [];
+    const add = (style, origin, ruleSelector, order) => {
+      const p = declaration(style, property);
+      if (p) candidates.push({ p, style, origin, ruleSelector, order });
+    };
+    add(m.inlineStyle, "inline", selector, 1e6);
+    for (const [i, x] of (m.matchedCSSRules || []).entries())
+      add(
+        x.rule.style,
+        x.rule.origin,
+        x.rule.selectorList?.text || selector,
+        i,
+      );
+    if (!candidates.length)
+      for (const ancestor of m.inherited || []) {
+        add(ancestor.inlineStyle, "inherited", selector, 1e6);
+        for (const [i, x] of (ancestor.matchedCSSRules || []).entries())
+          add(
+            x.rule.style,
+            "inherited",
+            x.rule.selectorList?.text || selector,
+            i,
+          );
+        if (candidates.length) break;
+      }
+    candidates.sort(
+      (a, b) =>
+        Number(b.p.important || false) - Number(a.p.important || false) ||
+        b.order - a.order,
+    );
+    const c = candidates[0];
+    if (!c)
+      return {
+        origin: "user-agent",
+        ruleSelector: selector,
+        authoredValue: "",
+        stylesheet: "",
+        line: null,
+        column: null,
+      };
+    const h = headers.get(c.style.styleSheetId);
+    const range = c.p.range || c.style.range;
+    const cssom = c.origin !== "inline" && (!h || !h.sourceURL);
+    return {
+      origin: cssom ? "cssom" : c.origin,
+      ruleSelector: c.ruleSelector,
+      authoredValue: c.p.value,
+      stylesheet: h?.sourceURL || "",
+      line: !cssom && range ? (h?.startLine || 0) + range.startLine + 1 : null,
+      column:
+        !cssom && range
+          ? range.startColumn +
+            1 +
+            (range.startLine === 0 ? h?.startColumn || 0 : 0)
+          : null,
+    };
+  } finally {
+    await session.send("Runtime.releaseObjectGroup", { objectGroup: "dfs" });
+  }
+}

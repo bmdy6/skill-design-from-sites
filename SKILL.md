@@ -34,3 +34,11 @@ Use `scripts/inspire-board.mjs` for local votes and `scripts/taste-share.mjs` fo
 First ask the user whether their host agent has owner-preference memory and whether they want a draft. Only the host may prepare that draft, with an explicit source on every item. This skill never reads agent memory files and never accesses external or internal systems for owner preferences. If the user declines, ask them directly using the next-question approach in `prompts/grill.md`.
 
 `scripts/boss-taste.mjs confirm --draft FILE --decisions "1=keep;2=edit:TEXT;3=drop" --out DIR/boss-taste.json` records the user's decisions. Only confirmed entries affect taste, previews, revisions and automatic checks. Preserve unresolved or ambiguous statements as text for the user's review. Confirmed owner preferences take priority over votes; disclose conflicts in taste.md.
+
+## Start by mode
+
+Start with `scripts/run.mjs intake --mode personal|company --out DIR`. `scripts/grill.mjs` persists one answer at a time. Company intake creates the **spec** gate; require its explicit confirmation before baseline, inspiration, tokens or drafts. Then record confirmed owner preferences (or the user's explicit choice of none), run `scripts/baseline-from-code.mjs` through the baseline step when the baseline is local, and derive taste with the existing page fixed as primary. External inspiration is opt-in and can influence only allowed categories.
+
+Run `scripts/consistency-check.mjs --baseline DIR/tokens.base.json --tokens DIR/tokens.json` in company mode and require exact value approval for new values. Preserve `basis` records in merge reports and variants. No external screenshots belong in company specifications, final drafts or share documents. Host intake may use only materials the user supplied; this skill does not search other systems for missing owner opinions.
+
+When revising, re-read the current page and feedback. A changed root ID, duplicate ID, outside-subtree mutation, remote resource or hardcoded design value must fail without applying the fragment. A failed browser or screenshot step leaves the page unapplied and feedback open. Always report failed or unavailable source and visual checks.
