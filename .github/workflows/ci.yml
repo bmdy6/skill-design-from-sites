@@ -13,9 +13,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Check sandboxed Chromium on the runner
+      # Ubuntu runners restrict the user namespaces Chromium needs for its sandbox.
+      - name: Enable sandboxed Chromium on the runner
         run: |
-          sysctl kernel.apparmor_restrict_unprivileged_userns
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           node --input-type=module -e 'import { chromium } from "playwright"; const browser = await chromium.launch({ headless: true, chromiumSandbox: true }); await browser.close();'
       - run: npm test
       - name: Original fixture screenshots
