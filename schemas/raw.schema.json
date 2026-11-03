@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "siteId",
+    "url",
+    "finalUrl",
+    "collectedAt",
+    "viewport",
+    "blocked",
+    "cssVars",
+    "fonts",
+    "elements",
+    "decls"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "siteId": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "finalUrl": {
+      "type": "string"
+    },
+    "collectedAt": {
+      "type": "string"
+    },
+    "viewport": {
+      "type": "object",
+      "required": ["name", "width", "height"]
+    },
+    "blocked": {
+      "type": "object"
+    },
+    "cssVars": {
+      "type": "array"
+    },
+    "fonts": {
+      "type": "array"
+    },
+    "elements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["eid", "selector", "bbox", "styles"]
+      }
+    },
+    "decls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "count", "area", "samples"]
+      }
+    }
+  }
+}

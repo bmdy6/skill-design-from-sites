@@ -1,0 +1,32 @@
+name: test
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # Ubuntu runners restrict the user namespaces Chromium needs for its sandbox.
+      - name: Enable sandboxed Chromium on the runner
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          node --input-type=module -e 'import { chromium } from "playwright"; const browser = await chromium.launch({ headless: true, chromiumSandbox: true }); await browser.close();'
+      - run: npm run check:licenses
+      - run: npm test
+      - name: Original fixture screenshots
+        if: always()
+        run: node scripts/screenshots.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fixture-screenshots
+          path: docs/screenshots/*.png
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,0 +1,70 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import path from "node:path";
+import os from "node:os";
+import { grill } from "../scripts/grill.mjs";
+import { readJSON } from "../scripts/lib/io.mjs";
+test("company asks required decisions in order and resumes without repeating", async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "dfs-grill-"));
+  try {
+    const state = path.join(dir, "grill.json");
+    let r = await grill({ mode: "company", state });
+    assert.equal(r.key, "goal");
+    const answers = [
+      "Improve navigation",
+      "Readers",
+      "test/fixtures/code-good",
+      ["structure"],
+      ["color"],
+      false,
+      ["spec", "wire", "variant", "hifi"],
+    ];
+    for (const answer of answers) {
+      const key = r.key;
+      r = await grill({
+        mode: "company",
+        state,
+        answer: JSON.stringify(answer),
+      });
+      if (!r.done) assert.notEqual(r.key, key);
+    }
+    assert.equal(r.done, true);
+    assert.equal(
+      (await readJSON(path.join(dir, "brief.json"))).mode,
+      "company",
+    );
+    assert.equal((await grill({ mode: "company", state })).done, true);
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});
+test("personal asks at most five and inferred facts need no question", async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "dfs-grill-personal-"));
+  try {
+    let r = await grill({
+        mode: "personal",
+        state: path.join(dir, "grill.json"),
+        inferred: { goal: "A planner" },
+      }),
+      count = 0;
+    const answers = {
+      pageTypes: ["landing"],
+      references: { needInspire: true, references: [] },
+      likeWords: ["quiet"],
+      avoidWords: ["busy"],
+    };
+    while (!r.done) {
+      count++;
+      r = await grill({
+        mode: "personal",
+        state: path.join(dir, "grill.json"),
+        answer: JSON.stringify(answers[r.key]),
+      });
+    }
+    assert.ok(count <= 4);
+    assert.equal(r.brief.needInspire, true);
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});

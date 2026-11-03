@@ -1,0 +1,1 @@
+First establish personal or company mode. Read the user's goal, page types, likes, dislikes, constraints and reference links. Write brief.json conforming to schemas/brief.schema.json. Personal mode asks at most five questions. If no references exist, needInspire must be true. Explain the next choice with a recommended answer; never infer a required approval.

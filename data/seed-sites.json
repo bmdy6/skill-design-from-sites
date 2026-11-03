@@ -1,0 +1,42 @@
+[
+  {
+    "siteUrl": "https://www.python.org/",
+    "title": "Python",
+    "tags": ["light", "sans", "docs"]
+  },
+  {
+    "siteUrl": "https://www.mozilla.org/",
+    "title": "Mozilla",
+    "tags": ["light", "sans", "editorial"]
+  },
+  {
+    "siteUrl": "https://www.wikipedia.org/",
+    "title": "Wikipedia",
+    "tags": ["light", "serif", "editorial"]
+  },
+  {
+    "siteUrl": "https://www.gutenberg.org/",
+    "title": "Project Gutenberg",
+    "tags": ["light", "serif", "library"]
+  },
+  {
+    "siteUrl": "https://www.blender.org/",
+    "title": "Blender",
+    "tags": ["dark", "sans", "creative"]
+  },
+  {
+    "siteUrl": "https://godotengine.org/",
+    "title": "Godot",
+    "tags": ["dark", "sans", "creative"]
+  },
+  {
+    "siteUrl": "https://www.nts.live/",
+    "title": "NTS",
+    "tags": ["dark", "serif", "music"]
+  },
+  {
+    "siteUrl": "https://www.theparisreview.org/",
+    "title": "The Paris Review",
+    "tags": ["dark", "serif", "editorial"]
+  }
+]

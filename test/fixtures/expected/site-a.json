@@ -1,0 +1,13 @@
+{
+  "button": {
+    "stylesheet": "main.css",
+    "line": 12,
+    "column": 3,
+    "authoredValue": "var(--color-primary)"
+  },
+  "min": {
+    "line": 1,
+    "column": 6,
+    "authoredValue": "#345678"
+  }
+}
