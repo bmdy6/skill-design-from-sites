@@ -1,0 +1,1 @@
+Read fragment.html, context.json, tokens.json, taste.json and confirmed boss-taste.json. Return fragment.new.html with the exact same root data-ds-id. Modify only the selected subtree. Use existing tokens, no hardcoded design values or executable content. If more scope is needed, ask the user. Apply through revise-apply and inspect the before/after results.

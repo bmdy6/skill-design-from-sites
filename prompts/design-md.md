@@ -1,0 +1,1 @@
+Read tokens.json, sources.json, merge-report.json and taste.json. Write DESIGN.md in Chinese with headings 风格、颜色用途、字体、间距、组件规则. Describe intent and usage through token paths only. Do not write numerical values, colors, dimensions or fonts not present in evidence. Disclose low confidence and contrast derivations with token references. Run lint-design-md before showing it.

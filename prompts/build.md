@@ -1,0 +1,1 @@
+Require final draft approval in next.json before writing production HTML+CSS. Read taste.json, DESIGN.md and the approved draft. Use tokens.css and local Lucide icons. Never copy reference artwork or insert external screenshots. Run check, taste-check and existing project build/tests; report the scope that could not be verified.
