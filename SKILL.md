@@ -28,3 +28,9 @@ Read `prompts/taste.md`; rules may cite only existing axes and voted IDs. Confir
 `scripts/preview-variants.mjs --run DIR --stage wire` creates the **wire** gate. After approval, `--stage variants` creates three distinct layouts. Personal mode may explicitly skip wire. `--stage pick --pick v1` creates the **variant** gate; after approval `--stage hifi` creates the **hifi** gate. Approve only on a real user answer using `scripts/run.mjs approve --out DIR --gate NAME`. Pending dependent actions exit 3. Final build also requires hifi approval.
 
 Use `scripts/inspire-board.mjs` for local votes and `scripts/taste-share.mjs` for link-and-swatch materials. Never put external screenshots in share documents. Record directional revision feedback in taste history without editing original votes.
+
+## Company owner preferences
+
+First ask the user whether their host agent has owner-preference memory and whether they want a draft. Only the host may prepare that draft, with an explicit source on every item. This skill never reads agent memory files and never accesses external or internal systems for owner preferences. If the user declines, ask them directly using the next-question approach in `prompts/grill.md`.
+
+`scripts/boss-taste.mjs confirm --draft FILE --decisions "1=keep;2=edit:TEXT;3=drop" --out DIR/boss-taste.json` records the user's decisions. Only confirmed entries affect taste, previews, revisions and automatic checks. Preserve unresolved or ambiguous statements as text for the user's review. Confirmed owner preferences take priority over votes; disclose conflicts in taste.md.
