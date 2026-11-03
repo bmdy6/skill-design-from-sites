@@ -5,6 +5,7 @@ import { spawn } from "node:child_process";
 import { setTimeout as delay } from "node:timers/promises";
 import { chromium } from "playwright";
 import { exists } from "./io.mjs";
+import { cleanupExternal, sandboxArgs } from "./browser-lifecycle.mjs";
 export { blockAssets } from "./browser-basic.mjs";
 export function detectBrowsers(env = process.env) {
   const rows = [];
@@ -45,6 +46,8 @@ async function external(candidate, headless) {
   let child,
     browser,
     stderr = "";
+  let disposal;
+  const dispose = () => (disposal ||= cleanupExternal(child, profile));
   try {
     const args = [
       `--user-data-dir=${profile}`,
@@ -52,7 +55,7 @@ async function external(candidate, headless) {
       "--no-first-run",
       "--no-default-browser-check",
       "--disable-background-networking",
-      "--no-sandbox",
+      ...sandboxArgs(),
       ...(headless
         ? ["--headless=new"]
         : [
@@ -91,15 +94,13 @@ async function external(candidate, headless) {
       try {
         await original();
       } finally {
-        if (child.exitCode === null) child.kill("SIGTERM");
-        await fs.rm(profile, { recursive: true, force: true });
+        await dispose();
       }
     };
     return browser;
   } catch (e) {
     await browser?.close().catch(() => {});
-    if (child && child.exitCode === null) child.kill("SIGTERM");
-    await fs.rm(profile, { recursive: true, force: true });
+    await dispose();
     throw Error(
       e.message + (stderr ? " — " + stderr.split("\n").find(Boolean) : ""),
     );
@@ -108,7 +109,10 @@ async function external(candidate, headless) {
 async function launch(candidate) {
   if (candidate.builtin)
     return {
-      browser: await chromium.launch({ headless: true }),
+      browser: await chromium.launch({
+        headless: true,
+        chromiumSandbox: sandboxArgs().length === 0,
+      }),
       headless: true,
     };
   try {

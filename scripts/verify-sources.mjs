@@ -1,3 +1,4 @@
+import { navigateForCollection } from "./lib/navigation.mjs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { cli, readJSON, writeJSON } from "./lib/io.mjs";
@@ -88,7 +89,7 @@ export async function verifySources(o) {
         await blockAssets(context);
         const page = await context.newPage(),
           cdp = await setupCDP(context, page);
-        await page.goto(s.url, { waitUntil: "networkidle", timeout: 25000 });
+        await navigateForCollection(page, s.url);
         let matched = false;
         for (const h of cdp.headers.values()) {
           if (h.sourceURL !== s.stylesheet) continue;

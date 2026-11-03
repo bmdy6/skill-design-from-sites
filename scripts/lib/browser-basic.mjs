@@ -1,6 +1,10 @@
 import { chromium } from "playwright";
+import { sandboxArgs } from "./browser-lifecycle.mjs";
 export async function openBrowser() {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    chromiumSandbox: sandboxArgs().length === 0,
+  });
   return {
     browser,
     info: { name: "chromium", version: browser.version() },

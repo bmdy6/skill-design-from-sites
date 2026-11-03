@@ -1,3 +1,4 @@
+import { navigateForCollection } from "./lib/navigation.mjs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
@@ -158,10 +159,7 @@ export async function capture(o) {
       });
       try {
         const page = await context.newPage();
-        await page.goto(c.siteUrl, {
-          waitUntil: "networkidle",
-          timeout: 15000,
-        });
+        await navigateForCollection(page, c.siteUrl, 15000);
         if (
           (await page
             .locator("body")

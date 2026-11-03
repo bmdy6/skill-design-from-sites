@@ -1,3 +1,4 @@
+import { navigateForCollection } from "./lib/navigation.mjs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import postcss from "postcss";
@@ -44,7 +45,7 @@ export async function collect(o) {
         const blocked = await blockAssets(context);
         const page = await context.newPage();
         const cdp = await setupCDP(context, page);
-        await page.goto(o.url, { waitUntil: "networkidle", timeout: 25000 });
+        await navigateForCollection(page, o.url);
         const elements = await page.evaluate(
           ({ props, selectorFn }) => {
             const selector = eval("(" + selectorFn + ")");
