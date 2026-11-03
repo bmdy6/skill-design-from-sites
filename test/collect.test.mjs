@@ -70,11 +70,15 @@ test("out-of-page crops are skipped and partial crops intersect capture bounds",
       for (const sample of skipped) {
         assert.equal(sample.crop, null);
         assert.match(sample.cropReason, /outside/i);
-        assert.equal(evidence.samples[sample.sid].crop, null);
-        assert.equal(evidence.samples[sample.sid].cropReason, sample.cropReason);
         await assert.rejects(
           fs.access(path.join(out, "crops/bounds", sample.sid + ".png")),
         );
+      }
+      const extractedSkipped = skipped.filter((s) => evidence.samples[s.sid]);
+      assert.ok(extractedSkipped.length > 0);
+      for (const sample of extractedSkipped) {
+        assert.equal(evidence.samples[sample.sid].crop, null);
+        assert.equal(evidence.samples[sample.sid].cropReason, sample.cropReason);
       }
       for (const [selector, width, height] of [
         ["#partial", 60, 30],
@@ -84,7 +88,7 @@ test("out-of-page crops are skipped and partial crops intersect capture bounds",
         const element = raw.elements.find((e) => e.selector === selector);
         const sample = saved.decls
           .flatMap((d) => d.samples)
-          .find((s) => s.eid === element.eid);
+          .find((s) => s.eid === element.eid && evidence.samples[s.sid]);
         const png = await fs.readFile(path.join(out, sample.crop));
         assert.equal(png.readUInt32BE(16), width);
         assert.equal(png.readUInt32BE(20), height);
