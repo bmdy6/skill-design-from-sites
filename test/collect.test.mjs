@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { serve } from "./helpers/serve.mjs";
 import { collect } from "../scripts/collect.mjs";
+import { extractRaw } from "../scripts/extract.mjs";
 import { validate } from "../scripts/lib/schema.mjs";
 import { readJSON } from "../scripts/lib/io.mjs";
 test("CDP collector preserves coordinates and never requests assets", async () => {
@@ -39,6 +40,57 @@ test("CDP collector preserves coordinates and never requests assets", async () =
       0,
     );
     assert.ok(Date.now() - start < 60000);
+  } finally {
+    await s.close();
+    await fs.rm(out, { recursive: true, force: true });
+  }
+});
+
+test("out-of-page crops are skipped and partial crops intersect capture bounds", async () => {
+  const s = await serve("test/fixtures");
+  const out = await fs.mkdtemp(path.join(os.tmpdir(), "dfs-crop-bounds-"));
+  try {
+    const raws = await collect({
+      url: s.url + "/crop-bounds/",
+      "site-id": "bounds",
+      out,
+    });
+    assert.equal(raws.length, 2);
+    const evidence = extractRaw(raws);
+    for (const raw of raws) {
+      const saved = await readJSON(
+        path.join(out, "raw/bounds", raw.viewport.name + ".json"),
+      );
+      const outside = raw.elements.find((e) => e.selector === "#outside");
+      assert.ok(outside);
+      const skipped = saved.decls
+        .flatMap((d) => d.samples)
+        .filter((s) => s.eid === outside.eid);
+      assert.ok(skipped.length > 1);
+      for (const sample of skipped) {
+        assert.equal(sample.crop, null);
+        assert.match(sample.cropReason, /outside/i);
+        assert.equal(evidence.samples[sample.sid].crop, null);
+        assert.equal(evidence.samples[sample.sid].cropReason, sample.cropReason);
+        await assert.rejects(
+          fs.access(path.join(out, "crops/bounds", sample.sid + ".png")),
+        );
+      }
+      for (const [selector, width, height] of [
+        ["#partial", 60, 30],
+        ["#limit", 80, 10],
+        ["#normal", 80, 40],
+      ]) {
+        const element = raw.elements.find((e) => e.selector === selector);
+        const sample = saved.decls
+          .flatMap((d) => d.samples)
+          .find((s) => s.eid === element.eid);
+        const png = await fs.readFile(path.join(out, sample.crop));
+        assert.equal(png.readUInt32BE(16), width);
+        assert.equal(png.readUInt32BE(20), height);
+        assert.equal(evidence.samples[sample.sid].crop, sample.crop);
+      }
+    }
   } finally {
     await s.close();
     await fs.rm(out, { recursive: true, force: true });

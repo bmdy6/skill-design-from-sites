@@ -92,7 +92,9 @@ export function extractRaw(raws) {
           column: s.column,
           origin: s.origin,
           bbox: e.bbox,
-          crop: `crops/${raw.siteId}/${s.sid}.png`,
+          crop:
+            s.crop === undefined ? `crops/${raw.siteId}/${s.sid}.png` : s.crop,
+          ...(s.cropReason ? { cropReason: s.cropReason } : {}),
           url: raw.url,
           collectedAt: raw.collectedAt,
           count: d.count,

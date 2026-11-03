@@ -215,9 +215,8 @@ export async function collect(o) {
           elements,
           decls,
         };
-        validate("raw", raw);
         const rawDir = path.join(o.out, "raw", raw.siteId);
-        await writeJSON(path.join(rawDir, viewport.name + ".json"), raw);
+        await fs.mkdir(rawDir, { recursive: true });
         await page.addStyleTag({
           content:
             "img,svg,video,canvas{visibility:hidden!important} *{background-image:none!important}",
@@ -243,31 +242,50 @@ export async function collect(o) {
           content:
             "*{color:transparent!important;text-shadow:none!important;box-shadow:none!important;background:transparent!important;border-color:transparent!important;outline:1px solid #777!important}",
         });
-        const cropFiles = new Map();
+        const bounds = await page.evaluate(() => ({
+          width: Math.min(innerWidth, document.documentElement.scrollWidth),
+          height: Math.min(
+            10000,
+            Math.max(innerHeight, document.documentElement.scrollHeight),
+          ),
+        }));
+        const cropResults = new Map();
         for (const d of decls)
           for (const s of d.samples) {
             const cropFile = path.join(cropDir, s.sid + ".png");
-            if (cropFiles.has(s.eid)) {
-              await fs.copyFile(cropFiles.get(s.eid), cropFile);
+            const cached = cropResults.get(s.eid);
+            s.crop = null;
+            if (cached?.cropReason) {
+              s.cropReason = cached.cropReason;
               continue;
             }
-            cropFiles.set(s.eid, cropFile);
-            const e = elements.find((e) => e.eid === s.eid);
-            const r = e.bbox;
-            await page.screenshot({
-              path: cropFile,
-              fullPage: true,
-              clip: {
-                x: Math.max(0, r[0]),
-                y: Math.max(0, r[1]),
-                width: Math.max(
-                  2,
-                  Math.min(r[2], viewport.width - Math.max(0, r[0])),
-                ),
-                height: Math.max(2, Math.min(r[3], 10000 - Math.max(0, r[1]))),
-              },
-            });
+            const r = elements.find((e) => e.eid === s.eid).bbox;
+            const x = Math.max(0, r[0]),
+              y = Math.max(0, r[1]),
+              width = Math.min(bounds.width, r[0] + r[2]) - x,
+              height = Math.min(bounds.height, r[1] + r[3]) - y;
+            if (width <= 0 || height <= 0) {
+              s.cropReason = "bbox outside capture bounds (empty intersection)";
+              cropResults.set(s.eid, { cropReason: s.cropReason });
+              continue;
+            }
+            try {
+              if (cached?.file) await fs.copyFile(cached.file, cropFile);
+              else
+                await page.screenshot({
+                  path: cropFile,
+                  fullPage: true,
+                  clip: { x, y, width, height },
+                });
+              s.crop = `crops/${raw.siteId}/${s.sid}.png`;
+              cropResults.set(s.eid, { file: cropFile });
+            } catch (error) {
+              s.cropReason = `crop capture failed: ${error.message}`;
+              cropResults.set(s.eid, { cropReason: s.cropReason });
+            }
           }
+        validate("raw", raw);
+        await writeJSON(path.join(rawDir, viewport.name + ".json"), raw);
         outputs.push(raw);
       } finally {
         await context.close();
