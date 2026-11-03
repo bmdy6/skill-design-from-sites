@@ -1,0 +1,212 @@
+import path from "node:path";
+import { cli, readJSON, writeJSON, write, exists, fail } from "./lib/io.mjs";
+import { validateBrief } from "./lib/brief.mjs";
+const company = [
+    "goal",
+    "audience",
+    "existingPages",
+    "mustKeep",
+    "allowedChanges",
+    "externalInspiration",
+    "approvers",
+  ],
+  personal = ["goal", "pageTypes", "references", "likeWords", "avoidWords"];
+const questions = {
+  goal: [
+    "What should this page accomplish?",
+    "Make the next action clear.",
+    "A single outcome keeps the design focused.",
+  ],
+  audience: [
+    "Who will use this page?",
+    "Existing product users",
+    "Start with the people already relying on the product.",
+  ],
+  existingPages: [
+    "Which existing page or local code is the baseline?",
+    null,
+    "Existing values anchor all structural decisions.",
+  ],
+  mustKeep: [
+    "What must stay consistent?",
+    ["structure", "type", "spacing"],
+    "Preserve familiar structure and reading rhythm.",
+  ],
+  allowedChanges: [
+    "Which categories may change?",
+    ["color"],
+    "Keep external influence narrow and reviewable.",
+  ],
+  externalInspiration: [
+    "May we consider external inspiration?",
+    false,
+    "Keep the existing product as the default reference.",
+  ],
+  approvers: [
+    "Which steps need owner approval?",
+    ["spec", "wire", "variant", "hifi"],
+    "Confirm the specification and every draft stage.",
+  ],
+  pageTypes: [
+    "Which page types are needed?",
+    ["landing"],
+    "Start with the smallest useful page.",
+  ],
+  references: [
+    "Which reference URLs should we use, or should we find inspiration?",
+    { references: [], needInspire: true },
+    "Explore directions if no reference is selected yet.",
+  ],
+  likeWords: [
+    "Which qualities should the design have?",
+    ["clear", "calm"],
+    "Choose qualities that support the goal.",
+  ],
+  avoidWords: [
+    "Which qualities should we avoid?",
+    ["cluttered"],
+    "Avoid distracting from the primary action.",
+  ],
+};
+function parseAnswer(value, key) {
+  let answer;
+  try {
+    answer = JSON.parse(value);
+  } catch {
+    answer = value;
+  }
+  if (["就这样", "use recommendation", "accept"].includes(answer)) {
+    answer = questions[key][1];
+    if (answer === null) fail("This answer requires an actual baseline");
+    return { answer, source: "default" };
+  }
+  if (key === "externalInspiration" && typeof answer !== "boolean")
+    fail("externalInspiration requires true or false");
+  if (
+    [
+      "mustKeep",
+      "allowedChanges",
+      "approvers",
+      "pageTypes",
+      "likeWords",
+      "avoidWords",
+    ].includes(key) &&
+    !Array.isArray(answer)
+  )
+    answer = String(answer)
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  if (key === "references") {
+    if (typeof answer === "string")
+      answer = {
+        references: answer.split(/\s+/).map((url) => ({ url, note: "" })),
+        needInspire: false,
+      };
+    if (
+      !answer ||
+      !Array.isArray(answer.references) ||
+      typeof answer.needInspire !== "boolean" ||
+      (!answer.references.length && !answer.needInspire)
+    )
+      fail("References or inspiration required");
+  }
+  if (answer === null || answer === "" || answer === undefined)
+    fail("Answer required");
+  return { answer, source: "user" };
+}
+export function briefFromGrill(state) {
+  const answers = Object.fromEntries(state.items.map((i) => [i.key, i.answer]));
+  const companyMode = state.mode === "company",
+    refs = companyMode
+      ? /^https?:\/\//.test(answers.existingPages)
+        ? [{ url: answers.existingPages, note: "Existing baseline" }]
+        : []
+      : answers.references.references;
+  return validateBrief({
+    schemaVersion: 1,
+    mode: state.mode,
+    owner: companyMode ? "boss" : "self",
+    goal: answers.goal,
+    pageTypes: companyMode ? ["existing"] : answers.pageTypes,
+    references: refs,
+    likeWords: companyMode ? [] : answers.likeWords,
+    avoidWords: companyMode ? [] : answers.avoidWords,
+    constraints: { theme: "any", brandColor: null },
+    needInspire: companyMode
+      ? answers.externalInspiration
+      : answers.references.needInspire,
+    ...(companyMode
+      ? {
+          company: Object.fromEntries(
+            company.slice(1).map((k) => [k, answers[k]]),
+          ),
+        }
+      : {}),
+  });
+}
+export async function grill(o) {
+  if (!["personal", "company"].includes(o.mode))
+    fail("Choose personal or company");
+  const file = o.state,
+    required = o.mode === "company" ? company : personal;
+  const state = (await exists(file))
+    ? await readJSON(file)
+    : { mode: o.mode, items: [], required, done: false };
+  if (state.mode !== o.mode) fail("Cannot switch mode mid-session");
+  const inferred =
+    typeof o.inferred === "string"
+      ? await readJSON(o.inferred)
+      : o.inferred || {};
+  for (const [key, answer] of Object.entries(inferred)) {
+    if (required.includes(key) && !state.items.some((i) => i.key === key)) {
+      const parsed = parseAnswer(JSON.stringify(answer), key);
+      state.items.push({
+        key,
+        q: questions[key][0],
+        recommended: questions[key][1],
+        answer: parsed.answer,
+        source: "inferred",
+        at: new Date().toISOString(),
+      });
+    }
+  }
+  let next = required.find((key) => !state.items.some((i) => i.key === key));
+  if (o.answer !== undefined) {
+    if (!next) fail("All questions are answered");
+    const a = parseAnswer(o.answer, next);
+    state.items.push({
+      key: next,
+      q: questions[next][0],
+      recommended: questions[next][1],
+      ...a,
+      at: new Date().toISOString(),
+    });
+    next = required.find((key) => !state.items.some((i) => i.key === key));
+  }
+  state.done = !next;
+  await writeJSON(file, state);
+  if (next)
+    return {
+      done: false,
+      key: next,
+      question: questions[next][0],
+      recommended: questions[next][1],
+      reason: questions[next][2],
+    };
+  const brief = briefFromGrill(state);
+  await writeJSON(path.join(path.dirname(file), "brief.json"), brief);
+  await write(
+    path.join(path.dirname(file), "spec.md"),
+    "# Design specification\n\n" +
+      state.items
+        .map(
+          (i) =>
+            `## ${i.key}\n\n${JSON.stringify(i.answer)}\n\nBasis: grill:${i.key} (${i.source})`,
+        )
+        .join("\n\n") +
+      "\n",
+  );
+  return { done: true, brief };
+}
+cli(import.meta.url, grill);

@@ -1,0 +1,58 @@
+[
+  {
+    "cid": "k1",
+    "path": "/styles/style-0/",
+    "theme": "dark",
+    "radiusPx": 0,
+    "fontClass": "serif"
+  },
+  {
+    "cid": "k2",
+    "path": "/styles/style-1/",
+    "theme": "dark",
+    "radiusPx": 16,
+    "fontClass": "serif"
+  },
+  {
+    "cid": "k3",
+    "path": "/styles/style-2/",
+    "theme": "dark",
+    "radiusPx": 0,
+    "fontClass": "sans"
+  },
+  {
+    "cid": "k4",
+    "path": "/styles/style-3/",
+    "theme": "dark",
+    "radiusPx": 16,
+    "fontClass": "sans"
+  },
+  {
+    "cid": "k5",
+    "path": "/styles/style-4/",
+    "theme": "light",
+    "radiusPx": 0,
+    "fontClass": "serif"
+  },
+  {
+    "cid": "k6",
+    "path": "/styles/style-5/",
+    "theme": "light",
+    "radiusPx": 16,
+    "fontClass": "serif"
+  },
+  {
+    "cid": "k7",
+    "path": "/styles/style-6/",
+    "theme": "light",
+    "radiusPx": 0,
+    "fontClass": "sans"
+  },
+  {
+    "cid": "k8",
+    "path": "/styles/style-7/",
+    "theme": "light",
+    "radiusPx": 16,
+    "fontClass": "sans"
+  }
+]

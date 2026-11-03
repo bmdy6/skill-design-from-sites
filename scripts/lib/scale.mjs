@@ -1,0 +1,43 @@
+export function spacingScale(values) {
+  const vs = values.filter((v) => v > 0 && v <= 128);
+  if (!vs.length) return { base: 4, fit: 0 };
+  const options = [4, 8];
+  const fits = options.map((base) => ({
+    base,
+    fit:
+      vs.filter((v) => Math.abs(v / base - Math.round(v / base)) < 0.08)
+        .length / vs.length,
+  }));
+  return fits.sort((a, b) => b.fit - a.fit || b.base - a.base)[0];
+}
+export function typeScale(values) {
+  const v = [...new Set(values.filter((x) => x >= 14 && x <= 96))].sort(
+    (a, b) => a - b,
+  );
+  const base = v.includes(16) ? 16 : v[0] || 16;
+  let best = { ratio: 1.25, error: Infinity };
+  for (let r = 1.1; r <= 1.501; r += 0.001) {
+    let error = 0;
+    for (const x of v) {
+      const exponent = Math.log(x / base) / Math.log(r);
+      error += Math.abs(exponent - Math.round(exponent));
+    }
+    if (error < best.error) best = { ratio: Number(r.toFixed(3)), error };
+  }
+  return { base, ratio: best.ratio };
+}
+export function typeNames(clusters, base = 16) {
+  let below = clusters.filter((c) => c.px < base).length,
+    above = 0;
+  const out = {};
+  for (const c of clusters) {
+    const name =
+      c.px === base
+        ? "base"
+        : c.px < base
+          ? ["xs", "sm"].at(-below--) || `below-${below + 1}`
+          : ["lg", "xl", "2xl", "3xl"][above++] || `larger-${above}`;
+    out[name] = c.id;
+  }
+  return out;
+}

@@ -1,0 +1,14 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import { exists } from "../scripts/lib/io.mjs";
+test("skill has frontmatter and every referenced executable or prompt exists", async () => {
+  const text = await fs.readFile("SKILL.md", "utf8");
+  assert.match(text, /^---\nname: .+\ndescription: .+\n---/);
+  for (const m of text.matchAll(
+    /(?:scripts\/[\w/-]+\.mjs|prompts\/[\w-]+\.md)/g,
+  ))
+    assert.equal(await exists(m[0]), true, m[0]);
+  assert.match(text, /label/);
+  assert.match(text, /exit 3/);
+});

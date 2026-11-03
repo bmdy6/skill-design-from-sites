@@ -1,0 +1,33 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { appendFeedback } from "../scripts/taste-build.mjs";
+import { shareText } from "../scripts/taste-share.mjs";
+import { tasteInputs } from "./helpers/taste.mjs";
+import { tasteBuild } from "../scripts/taste-build.mjs";
+test("revision signals move a taste axis, append once and never mutate votes", () => {
+  const { captures, votes } = tasteInputs(),
+    before = JSON.stringify(votes),
+    t = tasteBuild(captures, votes);
+  const changed = appendFeedback(t, {
+    id: "fb1",
+    tasteSignal: { axis: "radiusPx", direction: "increase" },
+  });
+  assert.equal(changed.history.length, 1);
+  assert.ok(changed.axes.radiusPx.range[1] > t.axes.radiusPx.range[1]);
+  assert.equal(JSON.stringify(votes), before);
+  assert.equal(
+    appendFeedback(changed, {
+      id: "fb1",
+      tasteSignal: { axis: "radiusPx", direction: "increase" },
+    }).history.length,
+    1,
+  );
+});
+test("share contains only reference links, original text and CSS color swatches", () => {
+  const { captures, votes } = tasteInputs(),
+    t = tasteBuild(captures, votes),
+    s = shareText(t, { color: { primary: { $value: "#2563eb" } } });
+  assert.doesNotMatch(s, /<img|!\[|\.(png|webp|jpg)/i);
+  assert.match(s, /https:\/\//);
+  assert.match(s, /background:/);
+});

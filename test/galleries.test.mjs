@@ -1,0 +1,19 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { serve } from "./helpers/serve.mjs";
+test("original galleries and robots fixtures are served without third-party HTML", async () => {
+  const s = await serve("test/fixtures/galleries");
+  try {
+    for (const name of ["awwwards", "godly", "landbook", "denied"]) {
+      const r = await fetch(s.url + "/" + name + "/");
+      assert.equal(r.status, 200);
+      assert.match(await r.text(), /Original sample/);
+    }
+    assert.match(
+      await (await fetch(s.url + "/denied/robots.txt")).text(),
+      /Disallow: \//,
+    );
+  } finally {
+    await s.close();
+  }
+});

@@ -1,0 +1,17 @@
+{
+  "Helvetica Neue": {
+    "openAlt": "Inter",
+    "stack": "Inter, system-ui, sans-serif",
+    "licenseNote": "Install the open alternative separately; no font files are collected."
+  },
+  "Arial": {
+    "openAlt": "Liberation Sans",
+    "stack": "Liberation Sans, Arial, sans-serif",
+    "licenseNote": "System fallback only."
+  },
+  "Georgia": {
+    "openAlt": "Source Serif 4",
+    "stack": "Source Serif 4, Georgia, serif",
+    "licenseNote": "Install the open alternative separately."
+  }
+}

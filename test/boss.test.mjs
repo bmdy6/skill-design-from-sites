@@ -1,0 +1,54 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { confirmBoss, applyBoss } from "../scripts/boss-taste.mjs";
+import { tasteBuild } from "../scripts/taste-build.mjs";
+import { tasteInputs } from "./helpers/taste.mjs";
+import { files } from "../scripts/lib/io.mjs";
+import fs from "node:fs/promises";
+test("unconfirmed entries are excluded, drops vanish and owner overrides conflicting votes", () => {
+  const draft = {
+    items: [
+      {
+        id: "b1",
+        text: "Prefer light pages",
+        axis: "theme",
+        polarity: "like",
+        source: "agent-memory",
+        confirmed: false,
+      },
+      {
+        id: "b2",
+        text: "More rounded",
+        axis: "radiusPx",
+        polarity: "like",
+        source: "user",
+        confirmed: false,
+      },
+      {
+        id: "b3",
+        text: "Discard",
+        axis: null,
+        polarity: "like",
+        source: "user",
+        confirmed: false,
+      },
+    ],
+  };
+  const c = confirmBoss(draft, "1=keep;3=drop");
+  assert.equal(c.items.length, 2);
+  assert.equal(c.items[1].confirmed, false);
+  const { captures, votes } = tasteInputs(),
+    taste = tasteBuild(captures, votes);
+  const r = applyBoss(taste, c);
+  assert.equal(r.axes.theme.prefer, "light");
+  assert.equal(r.axes.radiusPx.range[1], taste.axes.radiusPx.range[1]);
+  assert.ok(r.conflicts.length);
+  assert.match(r.conflicts[0].reason, /boss/);
+});
+test("runtime scripts do not inspect host memory directories", async () => {
+  const names = ["claude", "codex"];
+  for (const file of await files("scripts")) {
+    const text = await fs.readFile(file, "utf8");
+    for (const name of names) assert.equal(text.includes("~/." + name), false);
+  }
+});

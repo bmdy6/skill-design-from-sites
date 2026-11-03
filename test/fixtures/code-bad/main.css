@@ -1,0 +1,11 @@
+/* Original synthetic code */
+.button {
+  color: #2564ea;
+  font-size: 13px;
+  padding: 17px;
+  border-radius: 7px;
+  box-shadow: 0 2px 8px #000;
+}
+/* dfs-ignore-next-line */
+.ignored { color: #ff0000; }
+.inline { padding: 20px; /* dfs-ignore */ }

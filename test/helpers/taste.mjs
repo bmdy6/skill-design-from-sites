@@ -1,0 +1,41 @@
+export function tasteInputs() {
+  const captures = {
+    captures: Array.from({ length: 8 }, (_, i) => ({
+      cid: "k" + (i + 1),
+      url: `https://style-${i}.invalid/`,
+      ok: true,
+      fp: {
+        theme: i < 4 ? "dark" : "light",
+        bgL: i < 4 ? 0.15 : 0.95,
+        accentChroma: 0.12,
+        fontClass: {
+          serif: i % 2 ? 0 : 1,
+          sans: i % 2 ? 1 : 0,
+          mono: 0,
+          display: 0,
+        },
+        basePx: 16,
+        headingRatio: 3,
+        radiusPx: i < 4 ? 0 : 24,
+        density: 0.3,
+        whitespace: 0.7,
+        imagery: 0,
+        motion: { animations: 0, keyframes: 0 },
+        layout: i % 2 ? "grid" : "centered",
+        palette: [{ hex: i < 4 ? "#101820" : "#f5f5f0", weight: 1 }],
+      },
+    })),
+  };
+  const votes = {
+    items: captures.captures.map((c, i) => ({
+      cid: c.cid,
+      round: 1,
+      vote: i < 4 ? "like" : "dislike",
+      aspects: [],
+      comment: "",
+      by: "self",
+      at: "fixed",
+    })),
+  };
+  return { captures, votes };
+}
