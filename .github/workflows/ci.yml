@@ -18,6 +18,7 @@ jobs:
         run: |
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           node --input-type=module -e 'import { chromium } from "playwright"; const browser = await chromium.launch({ headless: true, chromiumSandbox: true }); await browser.close();'
+      - run: npm run check:licenses
       - run: npm test
       - name: Original fixture screenshots
         if: always()

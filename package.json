@@ -7,7 +7,8 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test --test-concurrency=1 test/*.test.mjs"
+    "test": "node --test --test-concurrency=1 test/*.test.mjs",
+    "check:licenses": "license-checker --excludePrivatePackages --onlyAllow 'MIT;ISC;Apache-2.0;BSD-2-Clause;BSD-3-Clause;0BSD;BlueOak-1.0.0;Public Domain;CC0-1.0;CC-BY-3.0'"
   },
   "dependencies": {
     "acorn": "^8.19.0",

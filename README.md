@@ -59,3 +59,7 @@ npm test
 `node scripts/screenshots.mjs` 只用仓库原创 fixture 生成灵感看板、方案对比、圈改前后和分享页截图，默认写入 `docs/screenshots/`。此脚本不接受外部网站输入。浏览器受系统权限限制时，截图无法生成，也不据此认定视觉验收通过。
 
 真实网络冒烟不进 CI，输出必须留在仓库外：`scripts/smoke-sites.mjs`、`scripts/smoke-galleries.mjs`、`scripts/smoke-browser.mjs`。开发验证使用 `npm test`，没有额外构建步骤。
+
+## 许可证
+
+本项目使用 MIT。运行 `npm run check:licenses` 检查全部依赖，使用 `--excludePrivatePackages` 排除私有根包。白名单包含 BlueOak-1.0.0；现有依赖还使用 Public Domain（jsonify），以及许可证检查工具依赖的 CC0-1.0、CC-BY-3.0（SPDX 数据）。依赖原有的许可证与署名声明保持不变。
