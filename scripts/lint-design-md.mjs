@@ -1,0 +1,4 @@
+import fs from 'node:fs/promises';import {cli,readJSON} from './lib/io.mjs';import {flattenTokens} from './build-tokens.mjs';
+export const sections=['风格','颜色用途','字体','间距','组件规则'];
+export function lintDesign(text,tokens){const errors=[],known=flattenTokens(tokens);text.split('\n').forEach((line,i)=>{if(/#[\da-f]{3,8}\b|\b(?:rgb|hsl)a?\s*\(|\b\d*\.?\d+(?:px|rem)\b/i.test(line))errors.push({line:i+1,msg:'Literal design value; use a token reference'});for(const m of line.matchAll(/\b(?:color|fontFamily|fontSize|fontWeight|lineHeight|spacing|radius|shadow)\.[\w.-]+/g))if(!known[m[0]])errors.push({line:i+1,msg:'Unknown token '+m[0]});});for(const s of sections)if(!new RegExp('^#{1,6}\\s+.*'+s,'m').test(text))errors.push({line:1,msg:'Missing section: '+s});return {ok:errors.length===0,errors};}
+cli(import.meta.url,async o=>{const r=lintDesign(await fs.readFile(o.file,'utf8'),await readJSON(o.tokens));if(!r.ok)process.exitCode=1;return r;});
