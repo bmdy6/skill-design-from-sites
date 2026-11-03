@@ -1,0 +1,2 @@
+/* color: #ff0000; */
+.button { color: var(--color-primary); font-size: var(--font-size-base); padding: 0; background: transparent; border-color: currentColor; margin: inherit; }
