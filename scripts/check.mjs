@@ -81,7 +81,12 @@ export function checkText(text, file, tokens, allow = []) {
     let nearestToken = null,
       nearestValue = null,
       min = Infinity;
-    const cat = kind === "font-size" ? "fontSize" : kind;
+    const cat =
+      property === "max-width" && tokens.maxWidth
+        ? "maxWidth"
+        : kind === "font-size"
+          ? "fontSize"
+          : kind;
     const parsed = kind === "color" ? color(clean) : null;
     for (const [p, t] of Object.entries(flat)) {
       if (!p.startsWith(cat + ".")) continue;

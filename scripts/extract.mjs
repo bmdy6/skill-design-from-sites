@@ -8,23 +8,25 @@ const alternatives = await readJSON(
   new URL("../data/font-alternatives.json", import.meta.url),
 );
 const category = (p) =>
-  p.includes("color")
-    ? "color"
-    : p === "font-family"
-      ? "fontFamily"
-      : p === "font-size"
-        ? "fontSize"
-        : p === "font-weight"
-          ? "fontWeight"
-          : p === "line-height"
-            ? "lineHeight"
-            : p.includes("radius")
-              ? "radius"
-              : p === "box-shadow"
-                ? "shadow"
-                : /padding|margin|gap/.test(p)
-                  ? "spacing"
-                  : null;
+  p === "max-width"
+    ? "maxWidth"
+    : p.includes("color")
+      ? "color"
+      : p === "font-family"
+        ? "fontFamily"
+        : p === "font-size"
+          ? "fontSize"
+          : p === "font-weight"
+            ? "fontWeight"
+            : p === "line-height"
+              ? "lineHeight"
+              : p.includes("radius")
+                ? "radius"
+                : p === "box-shadow"
+                  ? "shadow"
+                  : /padding|margin|gap/.test(p)
+                    ? "spacing"
+                    : null;
 const prefixes = {
   color: "c",
   fontFamily: "f",
@@ -34,6 +36,7 @@ const prefixes = {
   radius: "r",
   shadow: "sh",
   spacing: "sp",
+  maxWidth: "mw",
 };
 export function extractRaw(raws) {
   raws = [...raws].sort((a, b) =>
@@ -59,9 +62,14 @@ export function extractRaw(raws) {
       if (cat === "color" && !parsed) continue;
       if (cat === "shadow" && value === "none") continue;
       if (
-        ["fontSize", "spacing", "radius", "lineHeight", "fontWeight"].includes(
-          cat,
-        ) &&
+        [
+          "fontSize",
+          "spacing",
+          "radius",
+          "lineHeight",
+          "fontWeight",
+          "maxWidth",
+        ].includes(cat) &&
         !/^\d+(?:\.\d+)?(?:px)?$/.test(value)
       )
         continue;
@@ -168,7 +176,11 @@ export function extractRaw(raws) {
           raws
             .flatMap((r) => r.cssVars)
             .find((v) => color(v.value)?.hex === c.value)?.name || null;
-      if (["fontSize", "spacing", "radius", "lineHeight"].includes(cat))
+      if (
+        ["fontSize", "spacing", "radius", "lineHeight", "maxWidth"].includes(
+          cat,
+        )
+      )
         result.px = parseFloat(c.value);
       if (cat === "spacing") result.outlier = false;
       if (cat === "fontFamily") {
@@ -187,7 +199,7 @@ export function extractRaw(raws) {
     });
   }
   const autoNames = {};
-  for (const cat of ["spacing", "fontSize", "radius"])
+  for (const cat of ["spacing", "fontSize", "radius", "maxWidth"])
     autoNames[cat] = Object.fromEntries(
       clusters[cat].map((c, i) => [
         cat === "spacing"
@@ -198,6 +210,9 @@ export function extractRaw(raws) {
         c.id,
       ]),
     );
+  autoNames.maxWidth = Object.fromEntries(
+    clusters.maxWidth.map((c, i) => [String(i + 1), c.id]),
+  );
   autoNames.fontSize = typeNames(clusters.fontSize, type.base);
   const componentCandidates = [];
   for (const raw of raws)

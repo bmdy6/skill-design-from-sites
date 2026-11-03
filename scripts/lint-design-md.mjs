@@ -25,7 +25,7 @@ export function lintDesign(text, tokens) {
         msg: "Literal design value; use a token reference",
       });
     for (const m of line.matchAll(
-      /\b(?:color|fontFamily|fontSize|fontWeight|lineHeight|spacing|radius|shadow)\.[\w.-]+/g,
+      /\b(?:color|fontFamily|fontSize|fontWeight|lineHeight|spacing|radius|shadow|maxWidth)\.[\w.-]+/g,
     ))
       if (!known[m[0]])
         errors.push({ line: i + 1, msg: "Unknown token " + m[0] });

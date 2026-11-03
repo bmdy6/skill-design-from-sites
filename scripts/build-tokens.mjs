@@ -70,6 +70,7 @@ export function buildTokens(evidence, labels, overrides = {}, options = {}) {
     "fontSize",
     "radius",
     "structure",
+    "maxWidth",
     "lineHeight",
     "fontWeight",
   ])
@@ -188,8 +189,8 @@ export function buildTokens(evidence, labels, overrides = {}, options = {}) {
       conflicts: [],
     });
   }
-  for (const category of ["spacing", "fontSize", "radius"])
-    for (const [name, id] of Object.entries(primary.autoNames[category]))
+  for (const category of ["spacing", "fontSize", "radius", "maxWidth"])
+    for (const [name, id] of Object.entries(primary.autoNames[category] || {}))
       add(
         category,
         name,

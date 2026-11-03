@@ -17,25 +17,28 @@ const prefixes = {
   spacing: "sp",
   radius: "r",
   shadow: "sh",
+  maxWidth: "mw",
 };
 const cssCategory = (name) =>
-  /^--(?:color|bg|text)-/.test(name)
-    ? "color"
-    : /^--font-family-/.test(name)
-      ? "fontFamily"
-      : /^--font-size-/.test(name)
-        ? "fontSize"
-        : /^--font-weight-/.test(name)
-          ? "fontWeight"
-          : /^--line-height-/.test(name)
-            ? "lineHeight"
-            : /^--(?:spacing|space)-/.test(name)
-              ? "spacing"
-              : /^--(?:radius|border-radius)-/.test(name)
-                ? "radius"
-                : /^--(?:shadow|box-shadow)-/.test(name)
-                  ? "shadow"
-                  : null;
+  /^--(?:max-width|layout-width)-/.test(name)
+    ? "maxWidth"
+    : /^--(?:color|bg|text)-/.test(name)
+      ? "color"
+      : /^--font-family-/.test(name)
+        ? "fontFamily"
+        : /^--font-size-/.test(name)
+          ? "fontSize"
+          : /^--font-weight-/.test(name)
+            ? "fontWeight"
+            : /^--line-height-/.test(name)
+              ? "lineHeight"
+              : /^--(?:spacing|space)-/.test(name)
+                ? "spacing"
+                : /^--(?:radius|border-radius)-/.test(name)
+                  ? "radius"
+                  : /^--(?:shadow|box-shadow)-/.test(name)
+                    ? "shadow"
+                    : null;
 export function staticConfig(text) {
   const tree = parse(text, {
       ecmaVersion: "latest",
@@ -168,7 +171,9 @@ export async function baselineFromCode(o) {
       if (!c) return;
       normalized = c.hex;
     } else if (
-      ["fontSize", "spacing", "radius", "lineHeight"].includes(category)
+      ["fontSize", "spacing", "radius", "lineHeight", "maxWidth"].includes(
+        category,
+      )
     ) {
       const m = String(value).match(/^(-?\d+(?:\.\d+)?)(px|rem)?$/);
       if (!m) return;
@@ -253,6 +258,7 @@ export async function baselineFromCode(o) {
       };
       const categories = {
         colors: "color",
+        maxWidth: "maxWidth",
         spacing: "spacing",
         fontSize: "fontSize",
         fontFamily: "fontFamily",
@@ -323,7 +329,7 @@ export async function baselineFromCode(o) {
     }
   }
   const autoNames = {};
-  for (const category of ["spacing", "fontSize", "radius"]) {
+  for (const category of ["spacing", "fontSize", "radius", "maxWidth"]) {
     clusters[category].sort(
       (a, b) =>
         a.px * (a.unit === "rem" ? 16 : 1) - b.px * (b.unit === "rem" ? 16 : 1),
@@ -339,6 +345,9 @@ export async function baselineFromCode(o) {
       ]),
     );
   }
+  autoNames.maxWidth = Object.fromEntries(
+    clusters.maxWidth.map((c, i) => [String(i + 1), c.id]),
+  );
   autoNames.fontSize = typeNames(clusters.fontSize);
   const result = {
     schemaVersion: 1,
