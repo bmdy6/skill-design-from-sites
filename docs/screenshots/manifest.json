@@ -1,6 +1,6 @@
 {
-  "sourceCommit": "cb21b07de969600f9e0a0b0e9c26f48ab516086f",
-  "ciRun": 41604702187,
+  "sourceCommit": "95100e6366e71426be70ba42cf65b67d3b69b306",
+  "ciRun": 41608357704,
   "generator": "scripts/screenshots.mjs",
   "inputs": [
     "test/fixtures/styles",
@@ -12,7 +12,7 @@
     "inspiration-board.png": "4aeae8f7f78b33fd2b2186209112c0737185e08d9ba2452be595ea1f65c6905b",
     "preview-after.png": "198afa37ae9f8cd2fbccbd88946ca3486502654b1288b9d4614440306b23e1e7",
     "preview-before.png": "05f51a1952de26e70e60a104e43519264588f887bc90c8c61d1048006dcb170a",
-    "taste-share.png": "3c89b41e1e07adb29545ccdea16582997d0925e79ed118fe2ba4410338adc2cb",
-    "variant-comparison.png": "2166f3e6adfac3da3e14bf8110c9373f133c44ada577933e22b43e8ed9b0e3b7"
+    "taste-share.png": "13180683cec8356b612b16dd20fee88ca02faa3a5ec1ee16e8c9d46ffc9730e7",
+    "variant-comparison.png": "d9f692a10084edaf69aeb2fe6b69cae40b4a457b433815a1200f5e7706442ffb"
   }
 }
