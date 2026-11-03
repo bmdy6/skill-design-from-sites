@@ -17,14 +17,14 @@ export function shareText(taste, tokens) {
     Object.entries(tokens.color || {})
       .map(
         ([name, t]) =>
-          `<span style="display:inline-block;padding:1em;background:${escape(t.$value)}">${escape(name)}</span>`,
+          `<span style="display:inline-block;padding:1em;background:${escape(t.$value)}" aria-label="${escape(name)}">&nbsp;</span> ${escape(name)}`,
       )
       .join("\n") +
     "\n\n请回复喜欢的参考编号、喜欢哪些部分，以及需要调整的方向。\n"
   );
 }
 export function shareHTML(taste, tokens) {
-  return `<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>审美方向</title><style>body{font:18px/1.7 system-ui;background:#f5f4ee;color:#172033;max-width:960px;margin:64px auto;padding:32px}h1{font-size:48px}a{color:#2549b8}.swatches{display:flex;gap:16px}.swatches span{display:block;padding:32px;border:1px solid #ddd}section{padding:24px 0;border-top:1px solid #ddd}</style></head><body><p>DESIGN DIRECTION</p><h1>从偏好，走向明确的选择。</h1><p>以下只包含参考链接、自己的说明和设计色块。</p><section><h2>参考分工</h2>${taste.references
+  return `<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>审美方向</title><style>body{font:18px/1.7 system-ui;background:#f5f4ee;color:#172033;max-width:960px;margin:64px auto;padding:32px}h1{font-size:48px}a{color:#2549b8}.swatches{display:flex;gap:16px}.swatches{flex-wrap:wrap}.swatches span{display:block;width:120px;height:80px;border:1px solid #ddd}.swatches p{margin:8px 0}section{padding:24px 0;border-top:1px solid #ddd}</style></head><body><p>DESIGN DIRECTION</p><h1>从偏好，走向明确的选择。</h1><p>以下只包含参考链接、自己的说明和设计色块。</p><section><h2>参考分工</h2>${taste.references
     .filter((r) => !/[<\n]|\.(png|webp|jpg)/i.test(r.url))
     .map(
       (r) =>
@@ -37,7 +37,7 @@ export function shareHTML(taste, tokens) {
   )
     .map(
       ([n, t]) =>
-        `<span style="background:${escape(t.$value)}">${escape(n)}</span>`,
+        `<div><span aria-hidden="true" style="background:${escape(t.$value)}"></span><p>${escape(n)}</p></div>`,
     )
     .join(
       "",

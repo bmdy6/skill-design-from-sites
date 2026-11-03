@@ -223,6 +223,7 @@ export async function collect(o) {
         });
         await page.screenshot({
           path: path.join(rawDir, viewport.name + ".png"),
+          fullPage: true,
           clip: {
             x: 0,
             y: 0,
@@ -254,6 +255,7 @@ export async function collect(o) {
             const r = e.bbox;
             await page.screenshot({
               path: cropFile,
+              fullPage: true,
               clip: {
                 x: Math.max(0, r[0]),
                 y: Math.max(0, r[1]),

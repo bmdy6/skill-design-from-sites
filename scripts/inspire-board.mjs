@@ -107,6 +107,7 @@ export async function board(o) {
   let queue = Promise.resolve();
   const server = await previewServer({
     dir: root,
+    overlay: false,
     feedback: path.join(root, "feedback.json"),
     handle: async (req, res, u) => {
       if (variantMode && u.pathname.startsWith("/__dfs/variant/")) {

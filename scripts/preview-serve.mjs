@@ -77,7 +77,7 @@ export async function previewServer(o) {
       p = await fs.realpath(p);
       if (!p.startsWith(root + path.sep)) throw Error("Outside root");
       let body = await fs.readFile(p);
-      if (p.endsWith(".html"))
+      if (p.endsWith(".html") && o.overlay !== false)
         body = body
           .toString()
           .replace(
