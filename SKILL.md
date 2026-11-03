@@ -18,3 +18,13 @@ Only collect publicly accessible pages. Never reuse a logged-in browser profile 
 9. After final approval, follow `prompts/build.md` to write HTML and CSS in the target project. Run `scripts/check.mjs --tokens DIR/tokens.json --paths PATH --format json`, plus the project's existing build/tests. Source verification is `scripts/verify-sources.mjs --run DIR --sample 10 --seed 1`.
 
 If a gate is unresolved, stop the dependent action, write the next question and options to next.json, and continue only after the user answers. Reference evidence, labels and tokens are distinct; do not replace missing evidence with inferred values.
+
+## Taste first
+
+Read `prompts/intake.md` and generate brief.json. `scripts/run.mjs taste --out DIR` chooses existing references or metadata discovery; execute capture, vote and build phases in next.json order. Inspiration may load assets for rendering in a temporary context; screenshots live only in the external cache, never in the project. Discovery reads gallery metadata only, checks robots and limits requests. Low-confidence votes prepare another round automatically.
+
+Read `prompts/taste.md`; rules may cite only existing axes and voted IDs. Confirm the **taste** gate with the user's answer before extracting selected references. Each later prompt reads taste.json. Run `scripts/taste-check.mjs --taste DIR/taste.json --tokens DIR/tokens.json`, and repeat with `--html` for drafts because layout axes cannot all be checked from tokens.
+
+`scripts/preview-variants.mjs --run DIR --stage wire` creates the **wire** gate. After approval, `--stage variants` creates three distinct layouts. Personal mode may explicitly skip wire. `--stage pick --pick v1` creates the **variant** gate; after approval `--stage hifi` creates the **hifi** gate. Approve only on a real user answer using `scripts/run.mjs approve --out DIR --gate NAME`. Pending dependent actions exit 3. Final build also requires hifi approval.
+
+Use `scripts/inspire-board.mjs` for local votes and `scripts/taste-share.mjs` for link-and-swatch materials. Never put external screenshots in share documents. Record directional revision feedback in taste history without editing original votes.
