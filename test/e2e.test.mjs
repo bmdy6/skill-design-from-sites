@@ -75,6 +75,19 @@ test("company local-code workflow enforces every gate and keeps external screens
     await run({ _: ["baseline"], out: dir });
     await run({ _: ["taste"], out: dir });
     await approve(dir, "taste");
+    const exitCode = process.exitCode;
+    try {
+      await assert.rejects(
+        () => run({ _: ["tokens"], out: dir }),
+        /Taste checks failed/,
+      );
+    } finally {
+      // The token CLI sets exitCode even when invoked through run().
+      process.exitCode = exitCode;
+    }
+    const taste = await readJSON(path.join(dir, "taste.json"));
+    taste.axes.theme = { prefer: "light", strength: 1 };
+    await writeJSON(path.join(dir, "taste.json"), taste);
     await run({ _: ["tokens"], out: dir });
     const report = await readJSON(path.join(dir, "merge-report.json"));
     assert.equal(report.primarySite, "baseline");
@@ -150,6 +163,19 @@ test("personal original-page workflow collects, verifies and reaches approved bu
       components: {},
       styleSummary: "Original fixture",
     });
+    const exitCode = process.exitCode;
+    try {
+      await assert.rejects(
+        () => run({ _: ["tokens"], out: dir }),
+        /Taste checks failed/,
+      );
+    } finally {
+      // The token CLI sets exitCode even when invoked through run().
+      process.exitCode = exitCode;
+    }
+    const taste = await readJSON(path.join(dir, "taste.json"));
+    taste.axes.theme = { prefer: "light", strength: 1 };
+    await writeJSON(path.join(dir, "taste.json"), taste);
     await run({ _: ["tokens"], out: dir });
     await draftsToBuild(dir);
   } finally {

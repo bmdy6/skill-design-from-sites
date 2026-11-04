@@ -78,7 +78,10 @@ test("out-of-page crops are skipped and partial crops intersect capture bounds",
       assert.ok(extractedSkipped.length > 0);
       for (const sample of extractedSkipped) {
         assert.equal(evidence.samples[sample.sid].crop, null);
-        assert.equal(evidence.samples[sample.sid].cropReason, sample.cropReason);
+        assert.equal(
+          evidence.samples[sample.sid].cropReason,
+          sample.cropReason,
+        );
       }
       for (const [selector, width, height] of [
         ["#partial", 60, 30],
@@ -100,3 +103,81 @@ test("out-of-page crops are skipped and partial crops intersect capture bounds",
     await fs.rm(out, { recursive: true, force: true });
   }
 });
+
+test("strict style CSP still produces raw JSON and sanitized screenshots", async () => {
+  const s = await serve("test/fixtures", {
+    "/capture-rejections/csp.html": {
+      headers: { "Content-Security-Policy": "style-src 'self'" },
+    },
+  });
+  const out = await fs.mkdtemp(path.join(os.tmpdir(), "dfs-csp-collect-"));
+  try {
+    const raws = await collect({
+      url: s.url + "/capture-rejections/csp.html",
+      "site-id": "csp",
+      out,
+    });
+    assert.equal(raws.length, 2);
+    for (const raw of raws) {
+      const saved = await readJSON(
+        path.join(out, "raw/csp", raw.viewport.name + ".json"),
+      );
+      assert.ok(saved.elements.some((e) => e.tag === "button"));
+      await fs.access(path.join(out, "raw/csp", raw.viewport.name + ".png"));
+    }
+  } finally {
+    await s.close();
+    await fs.rm(out, { recursive: true, force: true });
+  }
+});
+
+import { openBrowser } from "../scripts/lib/browser.mjs";
+for (const stage of ["Screenshot", "Crop"])
+  test(`${stage} style injection failure warns and preserves raw JSON without unsafe crops`, async (t) => {
+    const s = await serve("test/fixtures");
+    const out = await fs.mkdtemp(path.join(os.tmpdir(), "dfs-style-failure-"));
+    const { browser } = await openBrowser();
+    try {
+      const page = await browser.newPage();
+      const prototype = Object.getPrototypeOf(page);
+      const original = prototype.addStyleTag;
+      t.mock.method(prototype, "addStyleTag", async function (options) {
+        const isCrop = options.content.includes("text-shadow");
+        if (isCrop === (stage === "Crop"))
+          throw Error("fixture injection failure");
+        return original.call(this, options);
+      });
+      await browser.close();
+      const raws = await collect({
+        url: s.url + "/capture-rejections/csp.html",
+        "site-id": "failure",
+        out,
+      });
+      assert.equal(raws.length, 2);
+      for (const raw of raws) {
+        const saved = await readJSON(
+          path.join(out, "raw/failure", raw.viewport.name + ".json"),
+        );
+        assert.equal(saved.warnings.length, 1);
+        assert.match(
+          saved.warnings[0],
+          new RegExp(
+            `${stage} style injection failed: fixture injection failure`,
+          ),
+        );
+        for (const sample of saved.decls.flatMap((d) => d.samples)) {
+          assert.equal(sample.crop, null);
+          assert.match(sample.cropReason, /style injection failed/i);
+        }
+        const shot = path.join(out, "raw/failure", raw.viewport.name + ".png");
+        if (stage === "Screenshot") await assert.rejects(fs.access(shot));
+        else await fs.access(shot);
+        assert.deepEqual(await fs.readdir(path.join(out, "crops/failure")), []);
+      }
+    } finally {
+      t.mock.restoreAll();
+      await browser.close();
+      await s.close();
+      await fs.rm(out, { recursive: true, force: true });
+    }
+  });
