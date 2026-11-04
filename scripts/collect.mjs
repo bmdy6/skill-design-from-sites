@@ -39,6 +39,7 @@ export async function collect(o) {
       const context = await browser.newContext({
         viewport: { width: viewport.width, height: viewport.height },
         serviceWorkers: "block",
+        bypassCSP: true,
         acceptDownloads: false,
       });
       try {
@@ -217,31 +218,47 @@ export async function collect(o) {
         };
         const rawDir = path.join(o.out, "raw", raw.siteId);
         await fs.mkdir(rawDir, { recursive: true });
-        await page.addStyleTag({
-          content:
-            "img,svg,video,canvas{visibility:hidden!important} *{background-image:none!important}",
-        });
-        await page.screenshot({
-          path: path.join(rawDir, viewport.name + ".png"),
-          fullPage: true,
-          clip: {
-            x: 0,
-            y: 0,
-            width: viewport.width,
-            height: Math.min(
-              10000,
-              await page.evaluate(() =>
-                Math.max(innerHeight, document.documentElement.scrollHeight),
+        let screenshotReady = false;
+        try {
+          await page.addStyleTag({
+            content:
+              "img,svg,video,canvas{visibility:hidden!important} *{background-image:none!important}",
+          });
+          screenshotReady = true;
+        } catch (error) {
+          (raw.warnings ||= []).push(
+            `Screenshot style injection failed: ${error.message}`,
+          );
+        }
+        if (screenshotReady) {
+          await page.screenshot({
+            path: path.join(rawDir, viewport.name + ".png"),
+            fullPage: true,
+            clip: {
+              x: 0,
+              y: 0,
+              width: viewport.width,
+              height: Math.min(
+                10000,
+                await page.evaluate(() =>
+                  Math.max(innerHeight, document.documentElement.scrollHeight),
+                ),
               ),
-            ),
-          },
-        });
+            },
+          });
+        }
         const cropDir = path.join(o.out, "crops", raw.siteId);
         await fs.mkdir(cropDir, { recursive: true });
-        await page.addStyleTag({
-          content:
-            "*{color:transparent!important;text-shadow:none!important;box-shadow:none!important;background:transparent!important;border-color:transparent!important;outline:1px solid #777!important}",
-        });
+        let cropStyleError;
+        try {
+          await page.addStyleTag({
+            content:
+              "*{color:transparent!important;text-shadow:none!important;box-shadow:none!important;background:transparent!important;border-color:transparent!important;outline:1px solid #777!important}",
+          });
+        } catch (error) {
+          cropStyleError = `Crop style injection failed: ${error.message}`;
+          (raw.warnings ||= []).push(cropStyleError);
+        }
         const bounds = await page.evaluate(() => ({
           width: Math.min(innerWidth, document.documentElement.scrollWidth),
           height: Math.min(
@@ -255,6 +272,11 @@ export async function collect(o) {
             const cropFile = path.join(cropDir, s.sid + ".png");
             const cached = cropResults.get(s.eid);
             s.crop = null;
+            if (!screenshotReady || cropStyleError) {
+              s.cropReason =
+                cropStyleError || "Screenshot style injection failed";
+              continue;
+            }
             if (cached?.cropReason) {
               s.cropReason = cached.cropReason;
               continue;

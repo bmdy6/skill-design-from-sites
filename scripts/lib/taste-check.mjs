@@ -17,19 +17,21 @@ export function checkAxes(taste, actual, where) {
       rule.prefer !== undefined
         ? value !== rule.prefer
         : !Number.isFinite(value) ||
-          value < rule.range[0] - 1e-6 ||
-          value > rule.range[1] + 1e-6
+          (rule.avoid
+            ? value >= rule.avoid[0] - 1e-6 && value <= rule.avoid[1] + 1e-6
+            : value < rule.range[0] - 1e-6 || value > rule.range[1] + 1e-6)
     )
       violations.push({
         axis,
-        expected: rule.prefer ?? rule.range,
+        expected: rule.prefer ?? rule.avoid ?? rule.range,
         actual: value,
         where,
       });
   }
   return {
-    ok: !violations.length,
-    score: checked ? 1 - violations.length / checked : 1,
+    ok: checked > 0 && !violations.length,
+    ...(checked === 0 ? { status: "insufficient" } : {}),
+    score: checked ? 1 - violations.length / checked : null,
     violations,
     unchecked,
   };

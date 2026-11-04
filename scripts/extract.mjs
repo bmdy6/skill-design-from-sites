@@ -10,7 +10,7 @@ const alternatives = await readJSON(
 const category = (p) =>
   p === "max-width"
     ? "maxWidth"
-    : p.includes("color")
+    : p === "color" || p.endsWith("-color")
       ? "color"
       : p === "font-family"
         ? "fontFamily"

@@ -78,3 +78,23 @@ test("accent-only company permission keeps neutral colors at baseline without mu
   assert.equal(r.sources["color.surface"].site, "baseline");
   assert.equal(JSON.stringify(evidence), before);
 });
+
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+test("baseline ignores blur-valued color variables and retains valid CSS colors", async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "dfs-blur-baseline-"));
+  try {
+    await fs.writeFile(
+      path.join(dir, "main.css"),
+      ":root { --color-x: blur(8px); --color-primary: #2563eb; }",
+    );
+    const result = await baselineFromCode({ dir });
+    assert.deepEqual(
+      result.clusters.color.map((c) => c.value),
+      ["#2563eb"],
+    );
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});

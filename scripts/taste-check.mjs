@@ -8,7 +8,13 @@ export { checkTasteTokens };
 export async function tasteCheck(o) {
   const taste = await readJSON(o.taste);
   if (!Object.values(taste.axes).some((a) => Math.abs(a.strength) >= 0.5))
-    return { ok: true, score: 1, violations: [], unchecked: [] };
+    return {
+      ok: false,
+      status: "insufficient",
+      score: null,
+      violations: [],
+      unchecked: [],
+    };
   if (o.tokens) return checkTasteTokens(taste, await readJSON(o.tokens));
   const server = await previewServer({
     dir: o.root || path.dirname(o.html),

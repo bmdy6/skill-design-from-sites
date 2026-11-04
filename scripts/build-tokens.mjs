@@ -288,9 +288,13 @@ export async function build(o) {
         .join("\n") +
       "\n",
   );
-  if (r.report.tasteCheck && !r.report.tasteCheck.ok) process.exitCode = 1;
+  const tasteCheck = r.report.tasteCheck;
+  if (tasteCheck?.status === "insufficient")
+    console.warn("Warning: insufficient taste evidence; tokens build continues.");
+  const ok = !tasteCheck?.violations.length;
+  if (!ok) process.exitCode = 1;
   return {
-    ok: !r.report.tasteCheck || r.report.tasteCheck.ok,
+    ok,
     tokens: Object.keys(r.sources).length,
   };
 }
