@@ -1,29 +1,33 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/readme/banner-dark.png">
-    <img alt="design-from-sites" src="docs/readme/banner-light.png" width="520">
-  </picture>
-</p>
+# skill-design-from-sites
 
-<h3 align="center">把你喜欢的网站，变成一套能追溯出处的设计规范。</h3>
+从喜欢的网站提取设计 token，每个值都能追溯到选择器与 CSS 行号。
 
-<p align="center">
-  <a href="https://github.com/bmdy6/skill-design-from-sites/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/bmdy6/skill-design-from-sites/actions/workflows/ci.yml/badge.svg"></a>
-  <img alt="Node ≥ 20" src="https://img.shields.io/badge/node-%E2%89%A520-339933?logo=node.js&logoColor=white">
-  <img alt="Agent skill" src="https://img.shields.io/badge/agent-skill-6E56CF">
-  <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
-  <br>
-  <a href="#快速开始"><b>快速开始</b></a> ·
-  <a href="#怎么用">怎么用</a> ·
-  <a href="SKILL.md">SKILL.md</a> ·
-  <a href="docs/reference.zh-CN.md">参考手册</a> ·
-  <a href="README.md">English</a>
-</p>
+[![CI](https://github.com/bmdy6/skill-design-from-sites/actions/workflows/ci.yml/badge.svg)](https://github.com/bmdy6/skill-design-from-sites/actions/workflows/ci.yml)
+[![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[English](README.md)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/hero-dark.png">
-  <img alt="左边是 tokens.json，右边是 main.css：每个 token 都连到它来自的那一行，并会重新打开页面复核来源" src="docs/readme/hero-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/hero-dark.zh-CN.png">
+  <img alt="tokens.json 的实测强调色连到 main.css 的来源行" src="docs/readme/hero-light.zh-CN.png" width="900">
 </picture>
+
+真实采集并复核的 token → CSS 来源。
+
+## 你会得到什么
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/showcase-dark.zh-CN.png">
+  <img alt="并排展示 tokens.json、DESIGN.md 规范和叶间志页面效果" src="docs/readme/showcase-light.zh-CN.png" width="900">
+</picture>
+
+虚构演示：实测 token、设计规范，以及供你选择的页面草稿。
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/samples-dark.zh-CN.png">
+  <img alt="原创虚构站点：杂志、规划工具、陶器商店与开发工具" src="docs/readme/samples-light.zh-CN.png" width="900">
+</picture>
+
+四种原创风格，用来探索配色、字体与布局偏好。
 
 ## 快速开始
 
@@ -31,59 +35,54 @@
 npx skills add bmdy6/skill-design-from-sites
 ```
 
-然后对你的 agent 说：
+告诉 agent：
 
-> 用 design-from-sites。这两个网站的感觉我喜欢：`<网址1>` `<网址2>`。帮我摸清审美，出一版落地页。
+> 使用 design-from-sites，以 `<url-1>` 和 `<url-2>` 为参考，帮我确认偏好并起草一个页面。
 
-<sub>需要 Node ≥ 20 · 不需要 API key · 没有托管服务 · 用 Playwright + Chromium 在本地运行</sub>
-
-## 怎么用
+## 工作流程
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/workflow-dark.png">
-  <img alt="1. 给参考站投票  2. 对比三种布局  3. 圈出一处再修改" src="docs/readme/workflow-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/workflow-dark.zh-CN.png">
+  <img alt="投票保留喜欢的风格，对比三个完整布局，再圈出一处修改" src="docs/readme/workflow-light.zh-CN.png" width="900">
 </picture>
 
-先定审美，再出 token，最后才写代码。每一步都要你明确点头才会继续。
+投票 → 对比 → 修改；每一步都等你确认。
 
-## 为什么用它
+## 十行看懂来源追溯
 
-- **token 有出处。** 每个颜色、字号、圆角和阴影都记着 selector 和样式表的 `行:列`。生成后会重新打开页面，抽样复核来源。
-- **模型只命名，不编数值。** 数值来自实测证据，agent 只能把名字对应到已有的证据 ID。引用不存在的 ID，构建会直接失败。
-- **不复制素材。** 采集时拦截图片、字体、logo、SVG 和视频请求；预览只用原创占位和本地 Lucide 图标。
+`sources.json` 示例；可用行号取决于样式表是否可访问。
 
-## 与已有项目的区别
-
-| | 侧重 | 本项目 |
-|---|---|---|
-| dembrandt | 品牌提取与 token 导出 | 自己用 Playwright/CDP 采集，记录 selector 和行列 |
-| getdesign / design.md | 给 agent 用的设计文档 | 证据和命名分开存放，来源会重新核对 |
-| superdesign | 多方案的交互探索 | 本地页面加显式确认，不依赖托管服务 |
-
-## 不装 agent 也能试
-
-```sh
-git clone https://github.com/bmdy6/skill-design-from-sites && cd skill-design-from-sites
-npm ci
-node scripts/doctor.mjs --json     # 缺 Chromium 时自动安装
-node scripts/run.mjs extract --url https://example.com --out .design-from-sites
+```json
+{
+  "color.accent": {
+    "value": "#a34f36",
+    "evidence": [{
+      "selector": ".cta",
+      "stylesheet": "https://journal.example/main.css",
+      "line": 42
+    }]
+  }
+}
 ```
 
-`extract` 会在桌面和手机两个宽度下测量页面，然后停在 `.design-from-sites/next.json`，之后交给 agent。生成 token 后，可以用它检查你自己的 CSS：
+## 命令与选项
 
-```sh
-node scripts/check.mjs --tokens .design-from-sites/tokens.json --paths src --format json
-```
+命令细节见[参考文档](docs/reference.zh-CN.md)，协作流程见 [SKILL.md](SKILL.md)。
 
-每个偏离 token 的值都会附上 `文件:行`、最接近的 token 和一个建议的 `var(--…)` 替换；有发现时退出码为 1。
+| 命令 / 选项 | 用途 |
+|---|---|
+| `extract --url <url> --out <dir>` | 采集，停在 `next.json` 等待 agent 命名 |
+| `tokens --out <dir>` | 从已标注的证据生成 token |
+| `--mode personal` / `--mode company` | 探索偏好 / 以现有设计为基准 |
+| `scripts/check.mjs --tokens <file> --paths src` | 查找偏离 token 的 CSS 值 |
 
-## 个人模式和公司模式
+## 常见问题与限制
 
-- **个人**（`--mode personal`）：最多问五个问题，然后依次定审美 → 出 token → 出设计稿。
-- **公司**（`--mode company`）：以现有页面或代码为基准；外部灵感默认关闭，不能跳过线框，老板偏好只能由你提供。
+- 需要运行时版本 ≥ 20；本地运行，无需 API 密钥。
+- 只采集公开页面；不复制商标、字体或图片。查看[版权和商标说明（非法律意见）](docs/reference.zh-CN.md#版权和商标说明非法律意见)。
+- Agent 只为已有证据命名；未知证据 ID 会使构建失败。
+- 公司模式默认关闭外部灵感；已有页面或代码是基准。
 
-全部命令、确认步骤和退出码见[参考手册](docs/reference.zh-CN.md)。参与开发请运行 `npm test`；要从 fixture 重新生成 README 图片，运行 `node scripts/readme-art.mjs`。
+## 许可证
 
----
-
-<p align="center"><sub>MIT 许可证 · 只采集公开页面，不复制 logo、字体和图片 · <a href="docs/reference.zh-CN.md#版权和商标说明非法律意见">版权和商标说明（非法律意见）</a></sub></p>
+[MIT](LICENSE).
