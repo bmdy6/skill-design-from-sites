@@ -159,14 +159,15 @@ export async function capture(o) {
       });
       try {
         const page = await context.newPage();
-        await navigateForCollection(page, c.siteUrl, 15000);
-        if (
-          (await page
-            .locator("body")
-            .innerText()
-            .then((t) => t.trim().length)) < 20
-        )
-          throw Error("Page too empty");
+        const response = await navigateForCollection(page, c.siteUrl, 15000);
+        if (response && response.status() >= 400)
+          throw Error(`HTTP ${response.status()}`);
+        const text = await page.locator("body").innerText();
+        const blocked =
+          /just a moment|access denied|captcha|verify (?:that )?you are human|checking your browser|访问被拒绝|验证码|人机验证/i;
+        if (blocked.test((await page.title()) + "\n" + text))
+          throw Error("Blocked or challenge page");
+        if (text.trim().length < 20) throw Error("Page too empty");
         const fp = makeFingerprint(await measure(page)),
           key = createHash("sha256").update(c.siteUrl).digest("hex"),
           shot = path.join(cache, key + ".jpg"),
@@ -177,7 +178,7 @@ export async function capture(o) {
           quality: 80,
           fullPage: false,
         });
-        const webp = await page.evaluate(async (data) => {
+        const { webp, palette } = await page.evaluate(async (data) => {
           const image = new Image();
           image.src = "data:image/jpeg;base64," + data;
           await image.decode();
@@ -185,8 +186,31 @@ export async function capture(o) {
           canvas.width = 480;
           canvas.height = 300;
           canvas.getContext("2d").drawImage(image, 0, 0, 480, 300);
-          return canvas.toDataURL("image/webp", 0.75).split(",")[1];
+          const pixels = canvas
+            .getContext("2d")
+            .getImageData(0, 0, 480, 300).data;
+          const counts = new Map();
+          for (let i = 0; i < pixels.length; i += 4) {
+            const hex =
+              "#" +
+              [pixels[i], pixels[i + 1], pixels[i + 2]]
+                .map((v) => v.toString(16).padStart(2, "0"))
+                .join("");
+            counts.set(hex, (counts.get(hex) || 0) + 1);
+          }
+          return {
+            webp: canvas.toDataURL("image/webp", 0.75).split(",")[1],
+            palette: [...counts]
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 8)
+              .map(([hex, count]) => ({ hex, weight: count / (480 * 300) })),
+          };
         }, jpeg.toString("base64"));
+        fp.palette = palette;
+        if (fp.palette[0]?.weight > 0.95)
+          throw Error(
+            `Screenshot is essentially a single color (${fp.palette[0].weight})`,
+          );
         await fs.writeFile(thumb, Buffer.from(webp, "base64"));
         captures.push({
           cid: c.cid,
@@ -213,7 +237,7 @@ export async function capture(o) {
     currentCids: captures.map((c) => c.cid),
     captures: [
       ...previous.captures.filter(
-        (p) => !captures.some((c) => c.cid === p.cid),
+        (p) => !candidates.candidates.some((c) => c.cid === p.cid),
       ),
       ...captures,
     ],

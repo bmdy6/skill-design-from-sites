@@ -9,26 +9,30 @@ const rgb = converter("rgb"),
   lab = converter("oklab");
 export const deltaE = differenceCiede2000();
 export function color(value, back = "#ffffff") {
-  const p = parse(value);
-  if (!p) return null;
-  const c = rgb(p);
-  if ((c.alpha ?? 1) === 0) return null;
-  const alpha = c.alpha ?? 1;
-  const b = rgb(parse(back) || parse("#ffffff"));
-  const result =
-    alpha < 1
-      ? {
-          mode: "rgb",
-          r: c.r * alpha + b.r * (1 - alpha),
-          g: c.g * alpha + b.g * (1 - alpha),
-          b: c.b * alpha + b.b * (1 - alpha),
-        }
-      : c;
-  return {
-    hex: formatHex(result),
-    composite:
-      alpha < 1 ? { original: value, background: formatHex(b), alpha } : null,
-  };
+  try {
+    const p = parse(value);
+    if (!p) return null;
+    const c = rgb(p);
+    if ((c.alpha ?? 1) === 0) return null;
+    const alpha = c.alpha ?? 1;
+    const b = rgb(parse(back) || parse("#ffffff"));
+    const result =
+      alpha < 1
+        ? {
+            mode: "rgb",
+            r: c.r * alpha + b.r * (1 - alpha),
+            g: c.g * alpha + b.g * (1 - alpha),
+            b: c.b * alpha + b.b * (1 - alpha),
+          }
+        : c;
+    return {
+      hex: formatHex(result),
+      composite:
+        alpha < 1 ? { original: value, background: formatHex(b), alpha } : null,
+    };
+  } catch {
+    return null;
+  }
 }
 export const contrast = (a, b) => wcagContrast(a, b);
 export function accessible(fg, bg, target = 4.5) {

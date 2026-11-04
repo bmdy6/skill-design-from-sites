@@ -58,7 +58,14 @@ export function tasteBuild(captures, votes, options = {}) {
         .filter((v) => v.vote === "dislike")
         .map(measure)
         .filter(Number.isFinite);
-    if (!likes.length) continue;
+    if (!likes.length) {
+      if (dislikes.length)
+        axes[axis] = {
+          avoid: [percentile(dislikes, 0.1), percentile(dislikes, 0.9)],
+          strength: -1,
+        };
+      continue;
+    }
     const avg = mean(all),
       std = Math.sqrt(mean(all.map((x) => (x - avg) ** 2)));
     const strength = std
@@ -69,7 +76,7 @@ export function tasteBuild(captures, votes, options = {}) {
       strength,
     };
   }
-  if (axes.bgL) {
+  if (axes.bgL?.range) {
     const dark = axes.bgL.range.reduce((a, b) => a + b, 0) / 2 < 0.5;
     axes.theme = {
       prefer: dark ? "dark" : "light",

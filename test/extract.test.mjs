@@ -25,3 +25,36 @@ test("8px and 1.2 scales are inferred from synthetic measurements", () => {
   assert.equal(e.scales.spacingBase, 8);
   assert.ok(Math.abs(e.scales.typeRatio - 1.2) < 0.02);
 });
+
+import { color } from "../scripts/lib/color.mjs";
+test("non-color blur syntax returns null without throwing", () => {
+  assert.equal(color("blur(8px)"), null);
+});
+test("extract ignores custom properties containing color in the middle", () => {
+  const raw = rawFixture();
+  raw.decls.push({
+    ...structuredClone(raw.decls[0]),
+    key: "--color-x|#ff00ff",
+  });
+  const result = extractRaw([raw]);
+  assert.equal(
+    result.clusters.color.some((c) => c.value === "#ff00ff"),
+    false,
+  );
+});
+test("extract survives blur-valued CSS variables while preserving real colors", () => {
+  const raw = rawFixture();
+  raw.cssVars.unshift({
+    name: "--color-x",
+    value: "blur(8px)",
+    scope: ":root",
+    source: {},
+  });
+  raw.decls.push({
+    ...structuredClone(raw.decls[0]),
+    key: "--color-x|blur(8px)",
+  });
+  assert.ok(
+    extractRaw([raw]).clusters.color.some((c) => c.value === "#2563eb"),
+  );
+});

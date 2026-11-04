@@ -1,7 +1,7 @@
 import http from "node:http";
 import fs from "node:fs/promises";
 import path from "node:path";
-export async function serve(root) {
+export async function serve(root, responses = {}) {
   const requests = [];
   const base = path.resolve(root);
   const server = http.createServer(async (req, res) => {
@@ -26,6 +26,10 @@ export async function serve(root) {
         "Content-Type",
         types[path.extname(p)] || "application/octet-stream",
       );
+      const response = responses[new URL(req.url, "http://local").pathname];
+      res.statusCode = response?.status || 200;
+      for (const [name, value] of Object.entries(response?.headers || {}))
+        res.setHeader(name, value);
       res.end(await fs.readFile(p));
     } catch {
       res.statusCode = 404;

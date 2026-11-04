@@ -63,3 +63,39 @@ test("eight original styles produce accurate fingerprints; dead URL is removed",
     await fs.rm(dir, { recursive: true, force: true });
   }
 });
+
+test("403, Cloudflare challenge and black fixtures are rejected with reasons, including recaptures", async () => {
+  const s = await serve("test/fixtures", {
+    "/capture-rejections/forbidden.html": { status: 403 },
+  });
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "dfs-invalid-capture-"));
+  try {
+    const out = path.join(dir, "captures.json");
+    const candidates = ["forbidden", "challenge", "black"].map((cid) => ({
+      cid,
+      siteUrl: `${s.url}/capture-rejections/${cid}.html`,
+    }));
+    await fs.writeFile(
+      out,
+      JSON.stringify({
+        captures: candidates.map((c) => ({ cid: c.cid, ok: true })),
+      }),
+    );
+    const result = await capture({ candidates: { candidates }, out });
+    assert.deepEqual(result.captures, []);
+    assert.deepEqual(result.currentCids, []);
+    assert.equal(result.rejected.length, 3);
+    for (const [cid, pattern] of [
+      ["forbidden", /403/],
+      ["challenge", /challenge|blocked|Just a moment/i],
+      ["black", /single|uniform|monochrome/i],
+    ])
+      assert.match(
+        result.rejected.find((r) => r.cid === cid)?.reason || "",
+        pattern,
+      );
+  } finally {
+    await s.close();
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});
