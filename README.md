@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/readme/banner-dark.png">
-    <img alt="design-from-sites" src="docs/readme/banner-light.png" width="640">
+    <img alt="design-from-sites" src="docs/readme/banner-light.png" width="520">
   </picture>
 </p>
 
@@ -12,9 +12,7 @@
   <img alt="Node ≥ 20" src="https://img.shields.io/badge/node-%E2%89%A520-339933?logo=node.js&logoColor=white">
   <img alt="Agent skill" src="https://img.shields.io/badge/agent-skill-6E56CF">
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
-</p>
-
-<p align="center">
+  <br>
   <a href="#quick-start"><b>Quick start</b></a> ·
   <a href="#how-it-works">How it works</a> ·
   <a href="SKILL.md">SKILL.md</a> ·

@@ -96,7 +96,7 @@ function base(t, w, h) {
 function hero(t, d) {
   const lines = d.css.slice(6, 15); // lines 7..15
   const used = new Set(d.rows.map((r) => r.line));
-  return `${base(t, 1200, 500)}<style>
+  return `${base(t, 1200, 466)}<style>
   .rows{padding:10px 0}
   .row{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:14px;height:54px;padding:0 22px;border-bottom:1px solid ${t.line}}
   .row:last-child{border-bottom:0}.row.on{background:${t.hl}}
@@ -111,16 +111,16 @@ function hero(t, d) {
   .ln i{font-style:normal;text-align:right;padding-right:16px;color:${t.num}}
   .ln.use{background:${t.hl}}.ln.on{background:${t.hlStrong}}.ln.on i{color:${t.accent};font-weight:700}
   svg{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
-  .foot{position:absolute;left:0;right:0;bottom:22px;display:flex;justify-content:center}
+  .foot{position:absolute;left:0;right:0;bottom:12px;display:flex;justify-content:center}
   .pill{display:flex;gap:10px;align-items:center;padding:10px 18px;border-radius:999px;background:${t.okBg};color:${t.ok};font-weight:600;font-size:16px;border:1px solid ${t.line}}
   </style>
-  <div class="win" style="left:40px;top:34px;width:500px">
+  <div class="win" style="left:40px;top:18px;width:500px">
     <div class="bar"><b></b><b></b><b></b><span>tokens.json</span><em>${d.rows.length} of ${d.total}</em></div>
     <div class="rows">${d.rows
       .map((r, i) => `<div class="row${i ? "" : " on"}" data-line="${r.line}">${visual(r, t)}<div><div class="nm">${esc(r.token)}</div><div class="vl">${esc(shown(r.value))}</div></div><span class="chip">${esc(r.file)}:${r.line}</span></div>`)
       .join("")}</div>
   </div>
-  <div class="win" style="left:640px;top:34px;width:520px">
+  <div class="win" style="left:640px;top:18px;width:520px">
     <div class="bar"><b></b><b></b><b></b><span>main.css</span><em>source</em></div>
     <div class="code">${lines
       .map((l, i) => {
@@ -129,7 +129,7 @@ function hero(t, d) {
       })
       .join("")}</div>
   </div>
-  <svg id="wires" width="1200" height="500"></svg>
+  <svg id="wires" width="1200" height="466"></svg>
   <div class="foot"><div class="pill">✓ Page reopened · ${d.verify.passed}/${d.verify.sampled} sampled sources still match</div></div>
   <script>
     const svg = document.getElementById("wires"), seen = new Set();
@@ -156,12 +156,12 @@ function hero(t, d) {
 
 function banner(t, d) {
   const sw = d.rows.filter((r) => r.token.startsWith("color."));
-  return `${base(t, 1200, 220)}<style>
+  return `${base(t, 1200, 196)}<style>
   body{display:grid;place-items:center}body::before{display:none}
   .wrap{text-align:center}
   h1{font:800 76px/1 "Inter Tight",Inter,sans-serif;letter-spacing:-.035em}
   h1 em{font:italic 400 84px/1 "Instrument Serif",serif;letter-spacing:-.01em;color:${t.accent};padding:0 .06em}
-  .chips{display:flex;gap:10px;justify-content:center;margin-top:26px}
+  .chips{display:flex;gap:10px;justify-content:center;margin-top:22px}
   .c{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border:1px solid ${t.line};border-radius:999px;background:${t.win};${MONO};font-size:13px;color:${t.mute}}
   .c i{width:22px;height:22px;border-radius:50%;border:1px solid ${t.line}}
   </style><div class="wrap"><h1>design<em>from</em>sites</h1>
@@ -223,8 +223,8 @@ export async function readmeArt(o) {
       shots.push(name);
     };
     for (const [k, t] of Object.entries(THEMES)) {
-      await shoot(`banner-${k}.png`, banner(t, d), 1200, 220);
-      await shoot(`hero-${k}.png`, hero(t, d), 1200, 500);
+      await shoot(`banner-${k}.png`, banner(t, d), 1200, 196);
+      await shoot(`hero-${k}.png`, hero(t, d), 1200, 466);
       await shoot(`workflow-${k}.png`, await workflow(t), 1200, 410);
     }
   } finally {
