@@ -78,10 +78,7 @@ test("out-of-page crops are skipped and partial crops intersect capture bounds",
       assert.ok(extractedSkipped.length > 0);
       for (const sample of extractedSkipped) {
         assert.equal(evidence.samples[sample.sid].crop, null);
-        assert.equal(
-          evidence.samples[sample.sid].cropReason,
-          sample.cropReason,
-        );
+        assert.equal(evidence.samples[sample.sid].cropReason, sample.cropReason);
       }
       for (const [selector, width, height] of [
         ["#partial", 60, 30],

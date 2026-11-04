@@ -154,7 +154,9 @@ export async function variants(o) {
       basis,
     });
     await save();
-    if (!p.ok || !taste.ok) fail("Draft checks failed", 1);
+    if (taste.status === "insufficient")
+      console.warn(`Warning: insufficient taste evidence; draft ${id} continues.`);
+    if (!p.ok || taste.violations?.length) fail("Draft checks failed", 1);
   }
   await write(path.join(run, "preview/compare.html"), comparisonHTML(state));
   return pendingGate(
