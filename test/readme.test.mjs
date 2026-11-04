@@ -24,7 +24,11 @@ test("README install command and links point at real targets", async () => {
     const s = await fs.readFile(f, "utf8");
     assert.ok(!s.includes("OWNER/REPO"), f + " still has a placeholder");
     assert.ok(s.includes("npx skills add bmdy6/skill-design-from-sites"));
-    for (const [, link] of s.matchAll(/\]\(((?!https?:)[^)#]+)/g))
-      await fs.access(link);
+    const links = [
+      ...s.matchAll(/\]\(((?!https?:)[^)#]+)/g),
+      ...s.matchAll(/(?:href|src|srcset)="((?!https?:|#)[^"#]+)/g),
+    ].map((m) => m[1]);
+    assert.ok(links.length > 5, f + " has too few local links to be checked");
+    for (const link of links) await fs.access(link);
   }
 });

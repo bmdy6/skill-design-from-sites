@@ -58,7 +58,7 @@ npm test
 
 ## 本地复现
 
-`node scripts/screenshots.mjs` 只用仓库原创 fixture 生成灵感看板、方案对比、圈改前后和分享页截图，默认写入 `docs/screenshots/`。此脚本不接受外部网站输入。`node scripts/readme-hero.mjs` 用这些截图和一次 fixture 采集合成 `docs/hero.png`。浏览器受系统权限限制时，截图无法生成，也不据此认定视觉验收通过。
+`node scripts/screenshots.mjs` 只用仓库原创 fixture 生成灵感看板、方案对比、圈改前后和分享页截图，默认写入 `docs/screenshots/`。此脚本不接受外部网站输入。`node scripts/readme-art.mjs` 用这些截图和一次对 `test/fixtures/site-a` 的真实采集，生成 README 的 banner、hero 和流程图（浅色、深色各一套），写入 `docs/readme/`。浏览器受系统权限限制时，截图无法生成，也不据此认定视觉验收通过。
 
 真实网络冒烟不进 CI，输出必须留在仓库外：`scripts/smoke-sites.mjs`、`scripts/smoke-galleries.mjs`、`scripts/smoke-browser.mjs`。开发验证使用 `npm test`，没有额外构建步骤。
 

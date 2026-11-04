@@ -58,7 +58,7 @@ Exit codes: 1 means a check failed, 2 means invalid input or references, and 3 m
 
 ## Local reproduction
 
-`node scripts/screenshots.mjs` generates the inspiration board, variant comparison, before/after revision and share-page screenshots from original repository fixtures only. It writes them to `docs/screenshots/` by default and accepts no external site input. `node scripts/readme-hero.mjs` composes `docs/hero.png` from those screenshots and a fixture extraction. If browser permissions block screenshots, they are not generated, and that alone is not taken as visual acceptance.
+`node scripts/screenshots.mjs` generates the inspiration board, variant comparison, before/after revision and share-page screenshots from original repository fixtures only. It writes them to `docs/screenshots/` by default and accepts no external site input. `node scripts/readme-art.mjs` renders the README banner, hero and workflow images (light and dark) into `docs/readme/` from those screenshots and a real extraction of `test/fixtures/site-a`. If browser permissions block screenshots, they are not generated, and that alone is not taken as visual acceptance.
 
 Real-network smoke tests are not part of CI, and their output must stay outside the repository: `scripts/smoke-sites.mjs`, `scripts/smoke-galleries.mjs`, `scripts/smoke-browser.mjs`. Development verification is `npm test`; there is no extra build step.
 

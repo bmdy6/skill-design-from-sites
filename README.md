@@ -1,10 +1,33 @@
-# design-from-sites
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/readme/banner-dark.png">
+    <img alt="design-from-sites" src="docs/readme/banner-light.png" width="640">
+  </picture>
+</p>
 
-**Turn the sites you love into a design system you can trace.** An agent skill that votes out your taste first, then turns reference pages into design tokens where every value points back to the exact CSS line it came from.
+<h3 align="center">Turn the sites you love into a design system you can trace.</h3>
 
-[![CI](https://github.com/bmdy6/skill-design-from-sites/actions/workflows/ci.yml/badge.svg)](https://github.com/bmdy6/skill-design-from-sites/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) · [中文](README.zh-CN.md)
+<p align="center">
+  <a href="https://github.com/bmdy6/skill-design-from-sites/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/bmdy6/skill-design-from-sites/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="Node ≥ 20" src="https://img.shields.io/badge/node-%E2%89%A520-339933?logo=node.js&logoColor=white">
+  <img alt="Agent skill" src="https://img.shields.io/badge/agent-skill-6E56CF">
+  <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
+</p>
 
-![Vote on references, get tokens with source receipts, compare three layouts, revise one part](docs/hero.png)
+<p align="center">
+  <a href="#quick-start"><b>Quick start</b></a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="SKILL.md">SKILL.md</a> ·
+  <a href="docs/reference.md">Reference</a> ·
+  <a href="README.zh-CN.md">中文</a>
+</p>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/hero-dark.png">
+  <img alt="tokens.json on the left, main.css on the right: every token links to the exact line it came from, and the page is reopened to re-verify sources" src="docs/readme/hero-light.png">
+</picture>
+
+## Quick start
 
 ```sh
 npx skills add bmdy6/skill-design-from-sites
@@ -14,19 +37,28 @@ Then tell your agent:
 
 > Use design-from-sites. Here are two sites whose feel I like: `<url-1>` `<url-2>`. Help me pin down my taste and draft a landing page.
 
-Node ≥ 20 · no API key · no hosted service · runs locally with Playwright + Chromium.
+<sub>Node ≥ 20 · no API key · no hosted service · runs locally with Playwright + Chromium</sub>
 
-## Why this one
+## How it works
 
-- **Tokens with receipts.** Every color, size and shadow carries its selector and stylesheet `line:column`. After building, the skill reopens the page and re-checks a sample of sources. The model only *names* things; it can only cite evidence IDs that already exist, so it can't invent values.
-- **Taste before tokens.** You vote on what works (color, type, layout, whitespace…) before anything is extracted. Then you compare three layouts, pick one and circle the part to change. Each step waits for your explicit "yes".
-- **Nothing copied.** Image, font, logo, SVG and video requests are blocked during collection. Previews use original placeholder blocks and local Lucide icons.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/workflow-dark.png">
+  <img alt="1. Vote on references  2. Compare three layouts  3. Circle one part and revise it" src="docs/readme/workflow-light.png">
+</picture>
+
+Your taste comes first, tokens second, code last. Every step waits for an explicit "yes" from you.
+
+## Why design-from-sites
+
+- **Tokens with receipts.** Every color, size, radius and shadow keeps its selector and stylesheet `line:column`. After building, the skill reopens the page and re-checks a sample of sources.
+- **The model names, it never invents.** Numbers come from measured evidence. The agent only maps names to evidence IDs that already exist, and an unknown ID fails the build.
+- **Nothing copied.** Image, font, logo, SVG and video requests are blocked during collection. Previews use original placeholders and local Lucide icons.
 
 | | What it focuses on | How this project differs |
 |---|---|---|
-| dembrandt | Brand extraction and token export | Own Playwright/CDP collector that records selector and stylesheet line/column. No code reused. |
-| getdesign / design.md | Design docs for agents | Numbers (evidence) and names (labels) are kept separate, and sources are re-verified |
-| superdesign | Exploring multiple design options | Local pages and explicit gates. No hosted service. |
+| dembrandt | Brand extraction and token export | Its own Playwright/CDP collector, which records selector and line/column |
+| getdesign / design.md | Design docs for agents | Evidence and names are kept apart, and sources are re-verified |
+| superdesign | Exploring multiple design options | Local pages and explicit approval gates, with no hosted service |
 
 ## Try it without an agent
 
@@ -37,36 +69,21 @@ node scripts/doctor.mjs --json     # installs Chromium if missing
 node scripts/run.mjs extract --url https://example.com --out .design-from-sites
 ```
 
-`extract` measures the page at desktop and mobile widths, then stops at `.design-from-sites/next.json`. From that point the host agent writes labels and the skill builds the tokens. [SKILL.md](SKILL.md) describes the full agent workflow. Every command, gate and exit code is listed in the [reference](docs/reference.md).
-
-When tokens exist, lint your own code against them:
+`extract` measures the page at desktop and mobile widths, then stops at `.design-from-sites/next.json`, where an agent takes over. Once tokens exist, you can lint your own CSS against them:
 
 ```sh
 node scripts/check.mjs --tokens .design-from-sites/tokens.json --paths src --format json
 ```
 
-Each off-token value is reported with its `file:line`, the nearest token and a suggested `var(--…)` replacement. Exit code 1 means findings.
+Each off-token value is reported with its `file:line`, the nearest token and a `var(--…)` replacement. Exit code 1 means there are findings.
 
 ## Personal and company mode
 
-- **Personal** (`--mode personal`): at most five questions, then taste, tokens and drafts.
-- **Company** (`--mode company`): starts from your existing page or code as the baseline. External inspiration is off by default and wireframes can't be skipped. Owner preferences come only from you.
+- **Personal** (`--mode personal`): at most five questions, then taste → tokens → drafts.
+- **Company** (`--mode company`): your existing page or code is the baseline. External inspiration is off by default, wireframes can't be skipped, and owner preferences come only from you.
 
-Details: [reference → modes and approvals](docs/reference.md#modes-and-approvals).
+All commands, gates and exit codes are in the [reference](docs/reference.md). To contribute, run `npm test`. To rebuild the README images from fixtures, run `node scripts/readme-art.mjs`.
 
-## Scope and rights
+---
 
-Only collects public pages; it never reads logged-in sessions, cookies, an existing browser profile, agent memory or internal systems. It measures one page at two viewports and never crawls a site.
-
-<details>
-<summary>Copyright and trademark note (not legal advice)</summary>
-
-Extracting computed styles from a public page does not grant any right to its design, trademarks, images or fonts. Check the target page's terms and the rules that apply to you. This project does not copy logos, copy text, images, font files or whole pages. Shareable output contains only source links, your own notes and CSS color swatches. See [reference → rights](docs/reference.md#copyright-and-trademark-not-legal-advice).
-
-</details>
-
-## Contributing
-
-`npm test` runs the full suite (node:test). Browser tests need a machine that can launch Chromium. Repository images come only from original fixtures, rebuilt by `node scripts/screenshots.mjs` and `node scripts/readme-hero.mjs`.
-
-MIT — see [LICENSE](LICENSE).
+<p align="center"><sub>MIT License · Only collects public pages and copies no logos, fonts or images · <a href="docs/reference.md#copyright-and-trademark-not-legal-advice">Copyright and trademark note (not legal advice)</a></sub></p>
