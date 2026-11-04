@@ -25,6 +25,8 @@
   <img alt="左边是 tokens.json，右边是 main.css：每个 token 都连到它来自的那一行，并会重新打开页面复核来源" src="docs/readme/hero-light.png">
 </picture>
 
+强调行：[`color.accent` → `main.css:12`](test/fixtures/site-a/main.css#L12)。
+
 ## 快速开始
 
 ```sh
@@ -39,10 +41,15 @@ npx skills add bmdy6/skill-design-from-sites
 
 ## 怎么用
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/workflow-dark.png">
-  <img alt="1. 给参考站投票  2. 对比三种布局  3. 圈出一处再修改" src="docs/readme/workflow-light.png">
-</picture>
+<p>1. 给参考站投票</p>
+<img alt="1. 给参考站投票" src="docs/screenshots/inspiration-board.png" width="1200">
+
+<p>2. 对比三种布局</p>
+<img alt="2. 对比三种布局" src="docs/screenshots/variant-comparison.png" width="1200">
+
+<p>3. 圈出一处再修改</p>
+<img alt="修改前" src="docs/screenshots/preview-before.png" width="1200">
+<img alt="修改后" src="docs/screenshots/preview-after.png" width="1200">
 
 先定审美，再出 token，最后才写代码。每一步都要你明确点头才会继续。
 
