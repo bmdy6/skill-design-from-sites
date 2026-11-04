@@ -25,6 +25,8 @@
   <img alt="tokens.json on the left, main.css on the right: every token links to the exact line it came from, and the page is reopened to re-verify sources" src="docs/readme/hero-light.png">
 </picture>
 
+Highlighted source: [`color.accent` → `main.css:12`](test/fixtures/site-a/main.css#L12).
+
 ## Quick start
 
 ```sh
@@ -39,10 +41,15 @@ Then tell your agent:
 
 ## How it works
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/workflow-dark.png">
-  <img alt="1. Vote on references  2. Compare three layouts  3. Circle one part and revise it" src="docs/readme/workflow-light.png">
-</picture>
+<p>1. Vote on references</p>
+<img alt="1. Vote on references" src="docs/screenshots/inspiration-board.png" width="1200">
+
+<p>2. Compare three layouts</p>
+<img alt="2. Compare three layouts" src="docs/screenshots/variant-comparison.png" width="1200">
+
+<p>3. Circle and revise</p>
+<img alt="Before revision" src="docs/screenshots/preview-before.png" width="1200">
+<img alt="After revision" src="docs/screenshots/preview-after.png" width="1200">
 
 Your taste comes first, tokens second, code last. Every step waits for an explicit "yes" from you.
 
@@ -51,6 +58,8 @@ Your taste comes first, tokens second, code last. Every step waits for an explic
 - **Tokens with receipts.** Every color, size, radius and shadow keeps its selector and stylesheet `line:column`. After building, the skill reopens the page and re-checks a sample of sources.
 - **The model names, it never invents.** Numbers come from measured evidence. The agent only maps names to evidence IDs that already exist, and an unknown ID fails the build.
 - **Nothing copied.** Image, font, logo, SVG and video requests are blocked during collection. Previews use original placeholders and local Lucide icons.
+
+## Comparison
 
 | | What it focuses on | How this project differs |
 |---|---|---|
