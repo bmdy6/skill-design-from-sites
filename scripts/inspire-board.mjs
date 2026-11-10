@@ -5,6 +5,7 @@ import { execFile } from "node:child_process";
 import { cli, readJSON, writeJSON, write, exists, fail } from "./lib/io.mjs";
 import { escape } from "./lib/html.mjs";
 import { pendingGate } from "./lib/gates.mjs";
+import { selectVariant } from "./lib/variant-selection.mjs";
 import { previewServer } from "./preview-serve.mjs";
 const aspects = ["color", "type", "layout", "whitespace", "motion", "imagery"];
 export function recordVote(data, item, options = {}) {
@@ -63,7 +64,7 @@ export async function board(o) {
     : input;
   const applySelection = async (item) => {
     if (!variantMode || item.vote !== "like") return;
-    input.picked = item.cid;
+    await selectVariant(run, input, item.cid);
     input.selection = {
       basis: [{ kind: "taste", ref: "vote:" + item.cid }],
       by: "user",
@@ -86,11 +87,12 @@ export async function board(o) {
     ? await readJSON(o.votes)
     : { items: [] };
   if (o.vote) {
+    const submitted = voteCLI(o.vote, { items: [] }, o);
     const r = voteCLI(o.vote, votes, o);
     const known = new Set(data.captures.map((c) => c.cid));
     if (r.items.some((v) => !known.has(v.cid))) fail("Unknown candidate");
     await writeJSON(o.votes, r);
-    for (const item of r.items) await applySelection(item);
+    for (const item of submitted.items) await applySelection(item);
     return r;
   }
   const cacheRoot = path.join(os.homedir(), ".cache/design-from-sites");
