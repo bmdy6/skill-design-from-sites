@@ -58,7 +58,7 @@ npm test
 
 ## 本地复现
 
-`node scripts/screenshots.mjs` 只用仓库原创 fixture 生成灵感看板、方案对比、圈改前后和分享页截图，默认写入 `docs/screenshots/`。此脚本不接受外部网站输入。`node scripts/readme-art.mjs` 用这些截图和一次对 `test/fixtures/site-a` 的真实采集，生成 README 的 banner、hero 和流程图（浅色、深色各一套），写入 `docs/readme/`。浏览器受系统权限限制时，截图无法生成，也不据此认定视觉验收通过。
+`node scripts/readme-art.mjs` 用原创虚构演示生成全部 README 图片，来源追溯主图使用真实本地采集。主题、本地化与视觉检查见[图片指南](readme/README.md)。工具原始截图可另用 `node scripts/screenshots.mjs --out /tmp/design-tool-screenshots` 生成，不作为 README 图片输入。
 
 真实网络冒烟不进 CI，输出必须留在仓库外：`scripts/smoke-sites.mjs`、`scripts/smoke-galleries.mjs`、`scripts/smoke-browser.mjs`。开发验证使用 `npm test`，没有额外构建步骤。
 

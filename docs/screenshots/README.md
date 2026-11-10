@@ -1,10 +1,5 @@
-# 原创 fixture 截图
+# Tool screenshots
 
-全部由 `node scripts/screenshots.mjs` 在 Linux Chromium 中生成，输入只有本仓库原创 fixture，不含真实网站截图或素材。
+Raw fixture screenshots are not committed as README artwork. To inspect the tools locally, run `node scripts/screenshots.mjs --out /tmp/design-tool-screenshots`.
 
-- `inspiration-board.png`：原创风格站点的灵感投票看板。
-- `variant-comparison.png`：三个不同布局的方案对比：居中等宽卡片、左右分栏、不对称编辑式主副稿。
-- `preview-before.png`、`preview-after.png`：仅修改第一个卡片子树的前后效果。
-- `taste-share.png`：只有参考链接、文字及 CSS 色块的分享页。
-
-生成脚本对应的代码提交为 `95100e6`，CI run 为 `41608357704`。截图来自该次 `fixture-screenshots` artifact。
+README artwork has its own original demo content: run `node scripts/readme-art.mjs`. See [the artwork guide](../readme/README.md).
