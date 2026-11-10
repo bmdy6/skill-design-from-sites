@@ -18,6 +18,33 @@ const kindFor = (p) =>
             : null;
 export const variable = (p) =>
   "--" + p.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase()).replaceAll(".", "-");
+// Discard variable names, but inspect fallbacks (including nested var()/calc()).
+// A balanced scan keeps function-valued colors and nested fallbacks intact.
+function literalValues(value) {
+  const variable = /\bvar\(/gi;
+  let result = "", start = 0, match;
+  while ((match = variable.exec(value))) {
+    let depth = 1, comma = -1, quote = null, end = match.index + match[0].length;
+    for (; end < value.length && depth; end++) {
+      const c = value[end];
+      if (c === "\\") { end++; continue; }
+      if (quote) {
+        if (c === quote) quote = null;
+        continue;
+      }
+      if (c === '"' || c === "'") quote = c;
+      else if (c === "(") depth++;
+      else if (c === ")") depth--;
+      else if (c === "," && depth === 1 && comma === -1) comma = end;
+    }
+    if (depth) break; // Leave malformed CSS visible to the existing checks.
+    result += value.slice(start, match.index) + " " +
+      (comma === -1 ? "" : literalValues(value.slice(comma + 1, end - 1))) + " ";
+    start = variable.lastIndex = end;
+  }
+  return result + value.slice(start);
+}
+
 export function checkText(text, file, tokens, allow = []) {
   const findings = [],
     flat = flattenTokens(tokens),
@@ -27,21 +54,25 @@ export function checkText(text, file, tokens, allow = []) {
     if (/dfs-ignore-next-line/.test(l)) ignored.add(i + 2);
     else if (/dfs-ignore\b/.test(l)) ignored.add(i + 1);
   });
-  const add = (property, value, index) => {
+  const add = (property, value, index, numeric = false) => {
     property = property.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase());
     let kind = kindFor(property);
-    const clean = value
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/var\([^)]*\)/g, "")
-      .trim();
+    // Only numeric JSX length properties acquire px; unitless values retain
+    // their original semantics (notably line-height, which matches "height").
+    const numericLength = numeric &&
+      (kind === "font-size" || kind === "radius" ||
+        (kind === "spacing" && !["line-height", "stop-opacity"].includes(property)));
+    const clean = literalValues((numericLength ? Number(value) + "px" : value)
+      .replace(/\/\*[\s\S]*?\*\//g, "")).trim();
     if (property.startsWith("--")) {
       const entry = Object.entries(flat).find(
         ([p]) => variable(p) === property,
       );
       if (entry && entry[1].$value === value.trim()) return;
     }
-    const hasColor =
-      !!color(clean) || clean.split(/[\s,()]+/).some((word) => !!color(word));
+    // A bare number is not a CSS color, even when the color parser accepts it.
+    const isColor = (v) => !/^[+-]?(?:\d*\.)?\d+(?:e[+-]?\d+)?$/i.test(v) && !!color(v);
+    const hasColor = isColor(clean) || clean.split(/[\s,()]+/).some(isColor);
     if (!kind)
       kind = hasColor
         ? "color"
@@ -137,9 +168,9 @@ export function checkText(text, file, tokens, allow = []) {
     for (const m of text.matchAll(/\bstyle\s*=\s*\{\{([\s\S]*?)\}\}/g)) {
       const start = m.index + m[0].indexOf(m[1]);
       for (const d of m[1].matchAll(
-        /([A-Za-z][\w]*)\s*:\s*(?:['"]([^'"]+)['"]|(-?\d+(?:\.\d+)?))/g,
+        /([A-Za-z][\w]*)\s*:\s*(?:['"]([^'"]+)['"]|([+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?))/gi,
       ))
-        add(d[1], d[2] || d[3], start + d.index);
+        add(d[1], d[2] ?? d[3], start + d.index, d[3] !== undefined);
     }
     for (const m of text.matchAll(
       /\b(text|bg|p[trblxy]?|m[trblxy]?|gap|rounded|shadow|w|h)-\[([^\]]+)\]/g,
