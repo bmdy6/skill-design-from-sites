@@ -6,6 +6,7 @@ import { flattenTokens } from "./build-tokens.mjs";
 import { prepare } from "./preview-prepare.mjs";
 import { tasteCheck } from "./taste-check.mjs";
 import { requireGate, pendingGate } from "./lib/gates.mjs";
+import { selectVariant } from "./lib/variant-selection.mjs";
 export function variantHTML(tokens, layout, wire = false) {
   const flat = flattenTokens(tokens);
   const pick = (cat, fallback) => {
@@ -88,8 +89,7 @@ export async function variants(o) {
     );
   }
   if (stage === "pick") {
-    if (!state.variants.some((v) => v.id === o.pick)) fail("Unknown variant");
-    state.picked = o.pick;
+    await selectVariant(run, state, o.pick);
     await save();
     return pendingGate(run, "variant", "Confirm the selected direction.", [
       "approve",

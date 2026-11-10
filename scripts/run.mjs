@@ -327,6 +327,13 @@ export async function run(o) {
     return variants({ ...o, run: out, taste: path.join(out, "taste.json") });
   }
   if (step === "build") {
+    await requireGate(out, "variant", "Confirm the selected direction.", [
+      "approve",
+      "revise",
+    ]);
+    const state = await readJSON(path.join(out, "variants.json"));
+    if (!state.picked || !state.hifi?.file)
+      fail("Generate the selected high fidelity draft before building.", 3);
     await requireGate(out, "hifi", "Approve the final draft before building.", [
       "approve",
       "revise",
