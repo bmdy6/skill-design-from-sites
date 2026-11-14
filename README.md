@@ -13,6 +13,16 @@ Extract design tokens you can trace to a selector and CSS line.
 
 Live extraction, verified CSS source.
 
+## Quick start
+
+```sh
+npx skills add bmdy6/skill-design-from-sites
+```
+
+Tell your agent:
+
+> Use design-from-sites with `<url-1>` and `<url-2>`; draft a page.
+
 ## What you get
 
 <picture>
@@ -28,16 +38,6 @@ Fictional demo: tokens, rules, rendered page.
 </picture>
 
 Four styles to explore your taste.
-
-## Quick start
-
-```sh
-npx skills add bmdy6/skill-design-from-sites
-```
-
-Tell your agent:
-
-> Use design-from-sites with `<url-1>` and `<url-2>`; draft a page.
 
 ## How it works
 

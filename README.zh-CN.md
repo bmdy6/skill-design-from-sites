@@ -13,6 +13,16 @@
 
 真实采集并复核的 token → CSS 来源。
 
+## 快速开始
+
+```sh
+npx skills add bmdy6/skill-design-from-sites
+```
+
+告诉 agent：
+
+> 使用 design-from-sites，以 `<url-1>` 和 `<url-2>` 为参考，帮我确认偏好并起草一个页面。
+
 ## 你会得到什么
 
 <picture>
@@ -28,16 +38,6 @@
 </picture>
 
 四种原创风格，用来探索配色、字体与布局偏好。
-
-## 快速开始
-
-```sh
-npx skills add bmdy6/skill-design-from-sites
-```
-
-告诉 agent：
-
-> 使用 design-from-sites，以 `<url-1>` 和 `<url-2>` 为参考，帮我确认偏好并起草一个页面。
 
 ## 工作流程
 
