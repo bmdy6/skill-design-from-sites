@@ -1,3 +1,5 @@
+低维护：作为作品展示，Issue 可能不及时回复
+
 # skill-design-from-sites
 
 从喜欢的网站提取设计 token，每个值都能追溯到选择器与 CSS 行号。

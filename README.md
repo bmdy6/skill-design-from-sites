@@ -1,3 +1,5 @@
+低维护：作为作品展示，Issue 可能不及时回复
+
 # skill-design-from-sites
 
 Extract design tokens you can trace to a selector and CSS line.
